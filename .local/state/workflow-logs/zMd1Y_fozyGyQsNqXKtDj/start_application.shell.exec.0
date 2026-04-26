@@ -1,0 +1,321 @@
+[mysql] starting...
+[mysql] ready on /home/runner/workspace/.data/mysql-run/mysql.sock
+[backend] starting on port 8080...
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚙️  override existing env vars with { override: true }[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🤖 agentic secret storage: https://dotenvx.com/as2[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com[0m
+Database connected successfully
+✅ Driving rules users table ready
+✅ Student questions table ready
+✅ Applications table ready
+✅ Course notes table ready
+✅ Applications table ready
+✅ Trades table ready
+✅ Hero slides table ready
+✅ Notifications table ready
+✅ Hero slides table ready
+✅ Driving school tables ready
+✅ Learning interaction tables ready
+✅ Student table columns verified
+✅ Fees table columns verified
+✅ Students table columns verified
+✅ Stock items image_url verified
+✅ Driving lessons upload columns verified
+Server is running on port 8080
+⏰ Cron scheduler started (auto payment reminders, hourly tick)
+✅ Admin user updated
+✅ Payments table ready
+✅ Attendance table ready
+[frontend] starting Vite on port 5000...
+✅ Academic-year / promotion tables ready
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5000
+
+[1G[0K
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m168[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.31.77.2:[1m5000[22m/[39m
+Trying username search for: admin
+Query by username: admin results: [33m1[39m
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Stock update error: Error: Incorrect date value: '0000-00-00 00:00:00' for column 'purchase_date' at row 1
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at exports.updateItem [90m(/home/runner/workspace/backend/[39mcontrollers/stockController.js:113:18[90m)[39m
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_TRUNCATED_WRONG_VALUE'[39m,
+  errno: [33m1292[39m,
+  sql: [32m'UPDATE stock_items SET item_name = ?, item_code = ?, category = ?, quantity = ?, unit = ?, min_quantity = ?,\n'[39m +
+    [32m'             location = ?, supplier = ?, purchase_date = ?, purchase_price = ?, description = ?, status = ?, image_url = ?\n'[39m +
+    [32m'             WHERE id = ?'[39m,
+  sqlState: [32m'22007'[39m,
+  sqlMessage: [32m"Incorrect date value: '0000-00-00 00:00:00' for column 'purchase_date' at row 1"[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+[SMS MOCK] To: 0789999999 Message: Murakaza neza real! Konti yawe ya Garden TVET:
+Username: teacher
+Password: teacher123
+Unjire kuri: gardentvet.rw
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Trying username search for: teacher
+Query by username: teacher results: [33m1[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:27:46 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:27:51 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:27:58 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/layouts/Layout.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:28:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Graduates.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:28:19 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Graduates.jsx, /src/index.css[22m [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:28:26 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Graduates.jsx, /src/index.css[22m [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:28:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Graduates.jsx, /src/index.css[22m [33m(x4)[39m
+Shutting down...
