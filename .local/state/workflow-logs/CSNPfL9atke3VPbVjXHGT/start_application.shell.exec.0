@@ -1,0 +1,320 @@
+[mysql] starting...
+[mysql] ready on /home/runner/workspace/.data/mysql-run/mysql.sock
+[backend] starting on port 8080...
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚡️ secrets for agents: https://dotenvx.com/as2[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🤖 agentic secret storage: https://dotenvx.com/as2[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚙️  suppress all logs with { quiet: true }[0m
+Database connected successfully
+✅ Driving rules users table ready
+✅ Student questions table ready
+✅ Applications table ready
+✅ Course notes table ready
+✅ Trades table ready
+✅ Applications table ready
+✅ Hero slides table ready
+✅ Notifications table ready
+✅ Hero slides table ready
+✅ Learning interaction tables ready
+✅ Driving school tables ready
+✅ Admin user updated
+✅ Payments table ready
+✅ Attendance table ready
+[frontend] starting Vite on port 5000...
+✅ Student table columns verified
+✅ Fees table columns verified
+✅ Students table columns verified
+✅ Stock items image_url verified
+✅ Driving lessons upload columns verified
+Server is running on port 8080
+⏰ Cron scheduler started (auto payment reminders, hourly tick)
+✅ Academic-year / promotion tables ready
+✅ Student auth columns ready (5 backfilled)
+✅ Employer / outreach / email_log tables ready
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5000
+
+[1G[0K
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m654[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.31.95.34:[1m5000[22m/[39m
+Trying username search for: admin
+Query by username: admin results: [33m1[39m
+Trying username search for: admin
+Query by username: admin results: [33m1[39m
+Trying username search for: admin
+Query by username: admin results: [33m1[39m
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}
+Error: Incorrect arguments to mysqld_stmt_execute
+    at PromisePool.execute [90m(/home/runner/workspace/backend/[39mnode_modules/[4mmysql2[24m/lib/promise/pool.js:54:22[90m)[39m
+    at [90m/home/runner/workspace/backend/[39mroutes/enhancedNotificationRoutes.js:39:40
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m {
+  code: [32m'ER_WRONG_ARGUMENTS'[39m,
+  errno: [33m1210[39m,
+  sql: [32m'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'[39m,
+  sqlState: [32m'HY000'[39m,
+  sqlMessage: [32m'Incorrect arguments to mysqld_stmt_execute'[39m
+}

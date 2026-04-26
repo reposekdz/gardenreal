@@ -1,0 +1,75 @@
+[mysql] initializing data directory...
+[mysql] starting...
+[mysql] ready on /home/runner/workspace/.data/mysql-run/mysql.sock
+[mysql] creating garden_tvet database and importing schema...
+[backend] starting on port 8080...
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🤖 agentic secret storage: https://dotenvx.com/as2[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚡️ secrets for agents: https://dotenvx.com/as2[0m
+Database connected successfully
+✅ Driving rules users table ready
+✅ Applications table ready
+✅ Hero slides table ready
+✅ Notifications table ready
+✅ Applications table ready
+✅ Course notes table ready
+✅ Trades table ready
+✅ Hero slides table ready
+✅ Admin user updated
+✅ Payments table ready
+✅ Attendance table ready
+✅ Driving school tables ready
+✅ Student questions table ready
+✅ Added reg_number to parent_link_requests
+Error adding extra cols to parent_link_requests: Deadlock found when trying to get lock; try restarting transaction
+✅ Student table columns verified
+✅ Fees table columns verified
+✅ Students table columns verified
+✅ Stock items image_url verified
+[frontend] starting Vite on port 5000...
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5000
+
+[1G[0K✅ Removed transaction_reference column from payments
+✅ Added term_start_date to fees
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m241[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.31.84.130:[1m5000[22m/[39m
+✅ Added term_end_date to fees
+✅ Added start_time to leave_requests
+✅ Learning interaction tables ready
+✅ Added end_time to leave_requests
+✅ Driving lessons upload columns verified
+✅ Added lesson to leave_requests
+Server is running on port 8080
+⏰ Cron scheduler started (auto payment reminders, hourly tick)
+✅ Added actual_return_time to leave_requests
+✅ Added returned_by to leave_requests
+✅ Added return_notes to leave_requests
+Shutting down...

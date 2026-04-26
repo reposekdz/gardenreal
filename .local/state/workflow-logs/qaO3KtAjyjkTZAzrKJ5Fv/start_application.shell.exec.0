@@ -1,0 +1,184 @@
+[mysql] starting...
+[mysql] ready on /home/runner/workspace/.data/mysql-run/mysql.sock
+[backend] starting on port 8080...
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚙️  suppress all logs with { quiet: true }[0m
+[dotenv@17.3.1] injecting env (0) from .env [2m-- tip: ⚙️  write to custom object with { processEnv: myObject }[0m
+Database connected successfully
+✅ Driving rules users table ready
+✅ Student questions table ready
+✅ Applications table ready
+✅ Course notes table ready
+✅ Trades table ready
+✅ Hero slides table ready
+✅ Applications table ready
+✅ Hero slides table ready
+✅ Notifications table ready
+✅ Learning interaction tables ready
+✅ Student table columns verified
+✅ Driving school tables ready
+✅ Fees table columns verified
+✅ Students table columns verified
+✅ Stock items image_url verified
+✅ Driving lessons upload columns verified
+Server is running on port 8080
+⏰ Cron scheduler started (auto payment reminders, hourly tick)
+✅ Admin user updated
+✅ Payments table ready
+✅ Attendance table ready
+[frontend] starting Vite on port 5000...
+✅ Academic-year / promotion tables ready
+✅ Employer / outreach / email_log tables ready
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5000
+
+[1G[0K
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m203[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.31.95.34:[1m5000[22m/[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m10:19:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Login.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m10:19:19 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Login.jsx, /src/index.css[22m [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m10:19:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m10:19:26 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m10:19:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m [33m(x3)[39m
+Shutting down...
