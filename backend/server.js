@@ -234,6 +234,7 @@ app.use('/api/sms-templates', smsTemplateRoutes);
 app.use('/api/news-engagement', newsEngagementRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/academic-years', academicYearRoutes);
+app.use('/api/employers', require('./routes/employerRoutes'));
 app.use('/api/driving-rules', require('./routes/drivingRulesRoutes'));
 app.use('/api/driving-school', require('./routes/drivingSchoolRoutes'));
 app.use('/api/course-notes', require('./routes/courseNotesRoutes'));

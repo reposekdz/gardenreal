@@ -5,8 +5,9 @@ import { toast } from 'react-toastify';
 import {
     GraduationCap, Search, Filter, Loader2, Printer, Award,
     BookOpen, Users, Calendar, X, Phone, Mail, MapPin, RefreshCcw,
-    ChevronDown, ChevronRight, Lock, FileText
+    ChevronDown, ChevronRight, Lock, FileText, Send
 } from 'lucide-react';
+import SendRosterModal from '../components/SendRosterModal';
 
 const TRADE_BADGE = {
     'Software Development':       'bg-blue-100 text-blue-800   border-blue-200',
@@ -37,6 +38,7 @@ const Graduates = () => {
     const [search, setSearch]     = useState('');
     const [collapsed, setCollapsed] = useState({});  // { groupKey: true }
     const [selected, setSelected]   = useState(null); // student detail modal
+    const [sendOpen, setSendOpen]   = useState(false);
 
     const printRef = useRef(null);
 
@@ -128,6 +130,10 @@ const Graduates = () => {
                         <button onClick={load}
                             className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl flex items-center gap-2 text-sm">
                             <RefreshCcw size={16} /> Refresh
+                        </button>
+                        <button onClick={() => setSendOpen(true)}
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg">
+                            <Send size={18} /> Send to Employers
                         </button>
                         <button onClick={printRoster}
                             className="px-4 py-2 bg-white text-amber-700 rounded-xl font-bold flex items-center gap-2 hover:bg-amber-50">
@@ -285,6 +291,14 @@ const Graduates = () => {
             {selected && (
                 <GraduateModal grad={selected} onClose={() => setSelected(null)} />
             )}
+
+            {/* Send roster modal */}
+            <SendRosterModal
+                open={sendOpen}
+                onClose={() => setSendOpen(false)}
+                filters={{ yearId, trade, search }}
+                graduateCount={totals.students}
+            />
         </div>
     );
 };

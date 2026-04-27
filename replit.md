@@ -42,7 +42,19 @@ A real (no mocks) academic year management module is wired end-to-end.
 - Filters: year, trade, search; stat cards for totals.
 - Detail modal with reg number, contact, address, guardian, cohort path, graduation date.
 - Print PDF roster via `window.print()` + `@media print` styles in a popup window (no extra deps).
+- "Send to Employers" button opens `SendRosterModal` carrying current filters.
 - Nav item gated to admin/director/registrar/dod/accountant in `frontend/src/layouts/Layout.jsx`.
+
+### Employer Directory & Outreach (April 2026)
+Production-grade module to recruit graduates into partner companies, end-to-end:
+- **DB**: `employers`, `employer_outreach`, `email_log` tables (idempotent in `backend/db.js`).
+- **Email service** (`backend/utils/emailService.js`) — Nodemailer over SMTP (env vars `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`). NO mock fallback — endpoints return 503 when unconfigured. All sends are persisted in `email_log`.
+- **PDF service** (`backend/utils/pdfRosterService.js`) — server-side PDF generation with `pdfkit`, paginated table by year+trade.
+- **Controller/routes**: `backend/controllers/employerController.js`, `backend/routes/employerRoutes.js` mounted at `/api/employers`. CRUD + `POST /send-roster` (builds PDF, sends per-employer email, logs each result) + `GET /outreach` (cross-employer audit log) + `GET /email/status`.
+- **Frontend**:
+  - `frontend/src/pages/Employers.jsx` (route `/employers`, nav-gated to admin/director/registrar): full CRUD with search/sector/status filters, stats cards, detail panel with per-employer outreach history, system-wide outreach log modal.
+  - `frontend/src/components/SendRosterModal.jsx`: reusable modal mounted on both Graduates and Employers pages — multi-select employer picker (sector filter, search, select-all), subject + custom message, PDF attach toggle, per-recipient send results with success/failure pills.
+- Email service is configured via environment secrets only — never hardcoded.
 
 ### Original module (still active)
 

@@ -710,6 +710,73 @@ const initAcademic = async () => {
         } catch (_) {}
 
         console.log('✅ Academic-year / promotion tables ready');
+
+        // ─── Employer directory & outreach ──────────────────────────
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS employers (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                company_name      VARCHAR(200) NOT NULL,
+                contact_person    VARCHAR(150) NULL,
+                email             VARCHAR(200) NULL,
+                phone             VARCHAR(50)  NULL,
+                sector            VARCHAR(120) NULL,
+                address           VARCHAR(300) NULL,
+                website           VARCHAR(300) NULL,
+                preferred_trades  VARCHAR(300) NULL,
+                notes             TEXT NULL,
+                status            ENUM('active','inactive','archived') DEFAULT 'active',
+                created_by        INT NULL,
+                created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_company (company_name),
+                INDEX idx_sector  (sector),
+                INDEX idx_status  (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS employer_outreach (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                employer_id      INT NOT NULL,
+                recipient_email  VARCHAR(200) NOT NULL,
+                subject          VARCHAR(300) NOT NULL,
+                message          TEXT NULL,
+                attached_pdf     TINYINT(1) DEFAULT 1,
+                filter_year_id   INT NULL,
+                filter_trade     VARCHAR(120) NULL,
+                filter_search    VARCHAR(200) NULL,
+                graduate_count   INT DEFAULT 0,
+                status           ENUM('sent','failed','queued') DEFAULT 'sent',
+                error            VARCHAR(500) NULL,
+                sent_by          INT NULL,
+                sent_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_employer (employer_id),
+                INDEX idx_status   (status),
+                INDEX idx_sent_at  (sent_at),
+                CONSTRAINT fk_outreach_employer
+                    FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS email_log (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                recipient     VARCHAR(500) NOT NULL,
+                subject       VARCHAR(500) NOT NULL,
+                status        ENUM('sent','failed','queued') DEFAULT 'sent',
+                error         VARCHAR(1000) NULL,
+                message_id    VARCHAR(300) NULL,
+                category      VARCHAR(80)  NULL,
+                related_id    INT NULL,
+                body_preview  TEXT NULL,
+                sent_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_status   (status),
+                INDEX idx_category (category),
+                INDEX idx_sent_at  (sent_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+        console.log('✅ Employer / outreach / email_log tables ready');
+
         connection.release();
     } catch (err) {
         console.error('Academic-year migration error:', err.message);
