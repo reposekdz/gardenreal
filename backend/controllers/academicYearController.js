@@ -369,6 +369,13 @@ async function buildPromotionPlan(fromYearId) {
     return plan;
 }
 
+exports.getLadder = async (_req, res) => {
+    res.json({
+        default: DEFAULT_LADDER,
+        ladders: LEVEL_LADDER,
+    });
+};
+
 exports.previewClose = async (req, res) => {
     const { id } = req.params;
     try {
@@ -433,7 +440,13 @@ exports.previewClose = async (req, res) => {
  */
 exports.closeYear = async (req, res) => {
     const { id } = req.params;
-    const { next_year, overrides } = req.body || {};
+    const { next_year, overrides, confirm } = req.body || {};
+
+    if (confirm !== true) {
+        return res.status(400).json({
+            message: 'Wemeza ko ushaka gufunga umwaka? Ohereza confirm:true.',
+        });
+    }
 
     const conn = await db.getConnection();
     try {

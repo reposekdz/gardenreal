@@ -83,8 +83,11 @@ const Students = () => {
         reg_number: '', first_name: '', last_name: '', gender: 'Male', dob: '',
         trade: '', level: '', contact_phone: '', contact_email: '',
         address_province: 'Kigali City', address_district: '', address_sector: '',
+        guardian_name: '', guardian_phone: '', guardian_relation: '',
+        student_type: 'private', academic_year_id: '',
         current_status: 'active', enrollment_date: ''
     });
+    const [academicYears, setAcademicYears] = useState([]);
     const [editData, setEditData] = useState({});
     const [actionMessage, setActionMessage] = useState('');
     const [actionReason, setActionReason] = useState('');
@@ -292,14 +295,24 @@ const Students = () => {
         setAttendanceRecords(prev => prev.map(r => r.studentId === studentId ? { ...r, notes } : r));
     };
 
+    const fetchAcademicYears = useCallback(async () => {
+        try {
+            const r = await axios.get(`${API_URL}/api/academic-years`, { headers: getHeaders(token) });
+            setAcademicYears(r.data || []);
+            const cur = (r.data || []).find(y => y.is_current);
+            if (cur) setFormData(prev => ({ ...prev, academic_year_id: prev.academic_year_id || cur.id }));
+        } catch (_) { /* non-admins lack access; silently ignore */ }
+    }, [token]);
+
     useEffect(() => {
         if (isInitialized && hasAccess) {
             fetchStudents();
             fetchStudentStats();
             fetchParents();
             fetchTradesAndLevels();
+            fetchAcademicYears();
         }
-    }, [isInitialized, hasAccess, fetchStudents, fetchStudentStats, fetchParents, fetchTradesAndLevels]);
+    }, [isInitialized, hasAccess, fetchStudents, fetchStudentStats, fetchParents, fetchTradesAndLevels, fetchAcademicYears]);
 
     const filteredStudents = useMemo(() => {
         if (!Array.isArray(students)) return [];
@@ -357,13 +370,12 @@ const Students = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            // Transform form data to match backend field names
             const studentData = {
-                reg_number: formData.reg_number,
+                reg_number: formData.reg_number || undefined,
                 first_name: formData.first_name,
                 last_name: formData.last_name,
-                gender: formData.gender.toLowerCase(), // Backend expects lowercase
-                date_of_birth: formData.dob, // Backend expects date_of_birth, not dob
+                gender: formData.gender.toLowerCase(),
+                date_of_birth: formData.dob || null,
                 trade: formData.trade,
                 level: formData.level,
                 contact_phone: formData.contact_phone,
@@ -371,15 +383,22 @@ const Students = () => {
                 address_province: formData.address_province,
                 address_district: formData.address_district,
                 address_sector: formData.address_sector,
-                student_type: 'private' // Default student type
+                guardian_name: formData.guardian_name || null,
+                guardian_phone: formData.guardian_phone || null,
+                guardian_relation: formData.guardian_relation || null,
+                student_type: formData.student_type || 'private',
+                academic_year_id: formData.academic_year_id || undefined,
             };
-            await axios.post(`${API_URL}/api/students`, studentData, { headers: getHeaders(token) });
-            toast.success('Student added successfully!');
+            const res = await axios.post(`${API_URL}/api/students`, studentData, { headers: getHeaders(token) });
+            toast.success(`Student added — Reg ${res.data.reg_number}`);
             setShowAddModal(false);
             setFormData({
                 reg_number: '', first_name: '', last_name: '', gender: 'Male', dob: '',
                 trade: '', level: '', contact_phone: '', contact_email: '',
                 address_province: 'Kigali City', address_district: '', address_sector: '',
+                guardian_name: '', guardian_phone: '', guardian_relation: '',
+                student_type: 'private',
+                academic_year_id: academicYears.find(y => y.is_current)?.id || '',
                 current_status: 'active', enrollment_date: ''
             });
             fetchStudents();
@@ -1057,10 +1076,56 @@ const Students = () => {
                                 <div><label className="block text-sm font-medium mb-1">Phone</label><input value={formData.contact_phone} onChange={e => setFormData({ ...formData, contact_phone: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
                                 <div><label className="block text-sm font-medium mb-1">Email</label><input type="email" value={formData.contact_email} onChange={e => setFormData({ ...formData, contact_email: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div><label className="block text-sm font-medium mb-1">Province</label><input value={formData.address_province} onChange={e => setFormData({ ...formData, address_province: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
                                 <div><label className="block text-sm font-medium mb-1">District</label><input value={formData.address_district} onChange={e => setFormData({ ...formData, address_district: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
                                 <div><label className="block text-sm font-medium mb-1">Sector</label><input value={formData.address_sector} onChange={e => setFormData({ ...formData, address_sector: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
                             </div>
+
+                            <div className="border-t pt-3">
+                                <p className="text-xs font-bold uppercase text-gray-500 mb-2">Enrollment</p>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Student Type *</label>
+                                        <select required value={formData.student_type}
+                                            onChange={e => setFormData({ ...formData, student_type: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg">
+                                            <option value="private">Private</option>
+                                            <option value="government">Government</option>
+                                            <option value="bursary">Bursary</option>
+                                            <option value="sponsored">Sponsored</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Academic Year</label>
+                                        <select value={formData.academic_year_id}
+                                            onChange={e => setFormData({ ...formData, academic_year_id: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg">
+                                            <option value="">— current —</option>
+                                            {academicYears.map(y => (
+                                                <option key={y.id} value={y.id}>{y.name}{y.is_current ? ' ★' : ''}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Reg Number</label>
+                                        <input placeholder="auto-generate niba ureka ubusa"
+                                            value={formData.reg_number}
+                                            onChange={e => setFormData({ ...formData, reg_number: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-t pt-3">
+                                <p className="text-xs font-bold uppercase text-gray-500 mb-2">Guardian (option)</p>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div><label className="block text-sm font-medium mb-1">Name</label><input value={formData.guardian_name} onChange={e => setFormData({ ...formData, guardian_name: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+                                    <div><label className="block text-sm font-medium mb-1">Phone</label><input value={formData.guardian_phone} onChange={e => setFormData({ ...formData, guardian_phone: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+                                    <div><label className="block text-sm font-medium mb-1">Relation</label><input placeholder="Father / Mother / Guardian" value={formData.guardian_relation} onChange={e => setFormData({ ...formData, guardian_relation: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+                                </div>
+                            </div>
+
                             <div className="flex justify-end gap-3 pt-4">
                                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
                                 <button type="submit" disabled={saving} className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50">{saving ? 'Saving...' : 'Save Student'}</button>

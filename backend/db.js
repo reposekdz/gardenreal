@@ -690,6 +690,7 @@ const initAcademic = async () => {
         await tryAlter(`ALTER TABLE students ADD COLUMN graduation_status ENUM('in_progress','graduated') DEFAULT 'in_progress'`);
         await tryAlter(`ALTER TABLE students ADD COLUMN application_id INT NULL`);
         await tryAlter(`ALTER TABLE students MODIFY COLUMN current_status ENUM('active','sick','left','suspended','on_leave','expelled','graduated') DEFAULT 'active'`);
+        await tryAlter(`ALTER TABLE students MODIFY COLUMN student_type ENUM('private','public','government','bursary','sponsored') DEFAULT 'private'`);
         await tryAlter(`ALTER TABLE students ADD INDEX idx_academic_year (academic_year_id)`);
 
         // applications extensions

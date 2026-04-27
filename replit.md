@@ -30,7 +30,7 @@ A real (no mocks) academic year management module is wired end-to-end.
 - `academic_years(id, name, start/end_date, status[planning|active|closed], is_current, closed_at, closed_by)`
 - `academic_terms(id, academic_year_id, term_number, name, start/end_date, status[upcoming|active|ended])`
 - `student_promotions(id, student_id, academic_year_id, from_trade, from_level, to_level, action[promoted|graduated|retained|enrolled], notes, created_by, created_at)`
-- `students` extended with `academic_year_id`, `graduation_status`, `application_id`; `current_status` enum extended with `graduated|on_leave|expelled`.
+- `students` extended with `academic_year_id`, `graduation_status`, `application_id`; `current_status` enum extended with `graduated|on_leave|expelled`; `student_type` enum widened to `private|public|government|bursary|sponsored`.
 - `applications` extended with `enrolled_student_id`, `enrolled_at`, `enrolled_trade`, `enrolled_level`, `enrolled_academic_year_id`.
 
 ### Backend (`/api/academic-years`, admin/director only for writes)
@@ -47,8 +47,16 @@ A real (no mocks) academic year management module is wired end-to-end.
   reg numbers when omitted, marks the application enrolled, logs a `student_promotions` row, sends SMS.
 
 ### Frontend
-- New page `frontend/src/pages/AcademicYear.jsx` (route `/academic-year`, nav-gated to admin/director):
-  year tabs, terms timeline with end-term buttons, year-create wizard, close-year preview with
-  promote/graduate/retain summary and optional next-year creation form, recent promotion history.
-- `frontend/src/pages/Applications.jsx` updated with a powerful **Enroll** modal allowing admins
-  to override trade/level/academic year and edit student details before creating the student record.
+- `frontend/src/pages/AcademicYear.jsx` (route `/academic-year`, nav-gated to admin/director):
+  year tabs, terms timeline with end-term buttons, year-create wizard, recent promotion history,
+  and a **Bulk Promote / Close Year** modal containing the new `BulkPromoteTable` component:
+  per-student dropdowns for action (Promote / Retain / Graduate) and override level (filtered by the
+  trade ladder fetched from `/api/academic-years/ladder`), Promote-all / Retain-all / Reset bulk
+  buttons, search, sticky header, amber row highlight for overridden rows, live summary pills, and
+  a required confirmation checkbox. Submit posts `{confirm:true, overrides:[…], next_year?}`.
+- `frontend/src/pages/Students.jsx` Add Student modal now includes Student Type
+  (private/government/bursary/sponsored), Academic Year selector (defaults to current), guardian
+  fields, and an optional reg-number override. Same `student_type` and `academic_year_id` are
+  passed through the create payload.
+- `frontend/src/pages/Applications.jsx` Enroll modal lets admins override trade/level/academic
+  year and edit student details before creating the student record.

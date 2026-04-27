@@ -154,7 +154,7 @@ exports.createStudent = async (req, res) => {
             contact_phone, contact_email, date_of_birth,
             guardian_name, guardian_phone, guardian_relation,
             address_province, address_district, address_sector, address_cell, address_village,
-            student_type
+            student_type, academic_year_id
         } = req.body;
 
         if (!first_name || !last_name || !trade || !level) {
@@ -198,17 +198,41 @@ exports.createStudent = async (req, res) => {
         // Get current year for year_enrolled
         const yearEnrolled = new Date().getFullYear();
 
+        // Resolve academic_year_id: if not provided, default to current active year
+        let resolvedYearId = academic_year_id ? Number(academic_year_id) : null;
+        if (!resolvedYearId) {
+            const [[cur]] = await db.execute(
+                'SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1'
+            );
+            resolvedYearId = cur ? cur.id : null;
+        }
+
         const [result] = await db.execute(
-            `INSERT INTO students (reg_number, first_name, last_name, trade, level, gender, 
+            `INSERT INTO students (reg_number, first_name, last_name, trade, level, gender,
              contact_phone, contact_email, date_of_birth, guardian_name, guardian_phone, guardian_relation,
              address_province, address_district, address_sector, address_cell, address_village,
-             current_status, student_type, year_enrolled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+             current_status, student_type, year_enrolled, academic_year_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)`,
             [finalRegNumber, first_name, last_name, trade, level, gender || 'Male',
                 contact_phone || null, contact_email || null, date_of_birth || null,
                 guardian_name || null, guardian_phone || null, guardian_relation || null,
                 address_province || null, address_district || null, address_sector || null,
-                address_cell || null, address_village || null, student_type || 'private', yearEnrolled]
+                address_cell || null, address_village || null, student_type || 'private',
+                yearEnrolled, resolvedYearId]
         );
+
+        // Log this enrollment in promotion history when we have a year context
+        if (resolvedYearId) {
+            try {
+                await db.execute(
+                    `INSERT INTO student_promotions
+                        (student_id, from_academic_year_id, to_academic_year_id,
+                         from_trade, to_trade, from_level, to_level, action, notes, created_by)
+                     VALUES (?, NULL, ?, ?, ?, NULL, ?, 'enrolled', 'manual create', ?)`,
+                    [result.insertId, resolvedYearId, trade, trade, level, req.user?.id || null]
+                );
+            } catch (e) { /* non-fatal */ }
+        }
 
         // Notify parents via SMS
         const studentId = result.insertId;

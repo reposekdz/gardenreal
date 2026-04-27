@@ -49,11 +49,21 @@ const AcademicYear = () => {
 
     const [closeOpen, setCloseOpen]      = useState(false);
     const [closePreview, setClosePreview]= useState(null);
+    const [overrides, setOverrides]      = useState({}); // { student_id: {action, to_level} }
     const [createNextYear, setCreateNextYear] = useState(true);
     const [nextYearForm, setNextYearForm]= useState(emptyYearForm());
+    const [confirmClose, setConfirmClose]= useState(false);
 
     const [promotionsCount, setPromCount]= useState({ promoted: 0, graduated: 0, retained: 0 });
     const [history, setHistory]          = useState([]);
+    const [ladder, setLadder]            = useState({
+        default: ['Level 3', 'Level 4', 'Level 5'],
+        ladders: {
+            'Software Development':      ['Level 3', 'Level 4', 'Level 5'],
+            'Building and Construction': ['Level 3', 'Level 4', 'Level 5'],
+            'Automobile Technology':     ['Level 3', 'Level 4a', 'Level 4b', 'Level 5a', 'Level 5b'],
+        },
+    });
 
     /* ─── data loaders ────────────────────────────────────────── */
     const loadAll = async () => {
@@ -90,7 +100,50 @@ const AcademicYear = () => {
         } catch (_) { /* silent */ }
     };
 
-    useEffect(() => { loadAll(); loadHistory(); /* eslint-disable-next-line */ }, []);
+    const loadLadder = async () => {
+        try {
+            const r = await api.get('/academic-years/ladder');
+            if (r.data?.ladders) setLadder(r.data);
+        } catch (_) { /* keep fallback */ }
+    };
+
+    useEffect(() => { loadAll(); loadHistory(); loadLadder(); /* eslint-disable-next-line */ }, []);
+
+    const ladderFor = (trade) => ladder.ladders?.[trade] || ladder.default;
+    const nextLevelFor = (trade, current) => {
+        const l = ladderFor(trade);
+        const i = l.indexOf(current);
+        if (i === -1 || i === l.length - 1) return null;
+        return l[i + 1];
+    };
+
+    const updateOverride = (studentId, patch) =>
+        setOverrides(prev => ({ ...prev, [studentId]: { ...prev[studentId], ...patch } }));
+
+    const resetOverrides = () => setOverrides({});
+
+    const computedRow = (row) => {
+        const ovr = overrides[row.student_id];
+        const action = ovr?.action || row.action;
+        let toLevel = row.to_level;
+        if (ovr) {
+            if (action === 'graduated') toLevel = null;
+            else if (action === 'retained') toLevel = row.from_level;
+            else if (action === 'promoted') toLevel = ovr.to_level || nextLevelFor(row.trade, row.from_level) || row.from_level;
+        }
+        return { action, toLevel };
+    };
+
+    const liveSummary = useMemo(() => {
+        if (!closePreview?.plan) return promotionsCount;
+        const s = { promoted: 0, graduated: 0, retained: 0 };
+        for (const row of closePreview.plan) {
+            const { action } = computedRow(row);
+            s[action] = (s[action] || 0) + 1;
+        }
+        return s;
+    // eslint-disable-next-line
+    }, [closePreview, overrides]);
 
     const switchYear = async (id) => {
         setActiveId(id);
@@ -155,6 +208,8 @@ const AcademicYear = () => {
             const r = await api.get(`/academic-years/${yearDetail.id}/preview-close`);
             setClosePreview(r.data);
             setPromCount(r.data.summary);
+            setOverrides({});
+            setConfirmClose(false);
             // Pre-fill nextYearForm based on current year +1
             const m = (yearDetail.name || '').match(/(\d{4})/);
             const start = m ? parseInt(m[1], 10) + 1 : new Date().getFullYear() + 1;
@@ -178,20 +233,34 @@ const AcademicYear = () => {
     };
 
     const submitClose = async () => {
+        if (!confirmClose) {
+            return toast.error('Banza wemeze ko ushaka gufunga umwaka (check the box).');
+        }
         if (!closePreview?.ready_to_close) {
             const ok = window.confirm('Hari terms zitarangiye. Wemeza gukomeza gufunga umwaka?');
             if (!ok) return;
         }
         setBusy(true);
         try {
-            const payload = {};
+            const overridesArr = Object.entries(overrides)
+                .filter(([_, v]) => v && v.action)
+                .map(([sid, v]) => ({
+                    student_id: Number(sid),
+                    action: v.action,
+                    to_level: v.action === 'promoted' ? (v.to_level || null) : null,
+                }));
+
+            const payload = { confirm: true, overrides: overridesArr };
             if (createNextYear) payload.next_year = nextYearForm;
+
             const r = await api.post(`/academic-years/${yearDetail.id}/close`, payload);
             toast.success(
                 `Umwaka warangiye. Promoted=${r.data.promoted}, Graduated=${r.data.graduated}, Retained=${r.data.retained}`
             );
             setCloseOpen(false);
             setClosePreview(null);
+            setOverrides({});
+            setConfirmClose(false);
             await loadAll();
             await loadHistory();
         } catch (err) {
@@ -449,13 +518,13 @@ const AcademicYear = () => {
                 </Modal>
             )}
 
-            {/* ─── Close Year Modal ──────────────────────────────── */}
+            {/* ─── Close Year Modal — Bulk Promote ─────────────── */}
             {closeOpen && closePreview && (
-                <Modal title={`Funga ${yearDetail.name}`} onClose={() => setCloseOpen(false)} size="xl">
+                <Modal title={`Funga ${yearDetail.name} — Bulk Promote`} onClose={() => setCloseOpen(false)} size="xl">
                     <div className="grid grid-cols-3 gap-3 mb-4">
-                        <SummaryPill label="Promoted"  value={promotionsCount.promoted}  color="bg-green-100 text-green-700" />
-                        <SummaryPill label="Graduated" value={promotionsCount.graduated} color="bg-amber-100 text-amber-700" />
-                        <SummaryPill label="Retained"  value={promotionsCount.retained}  color="bg-gray-100 text-gray-700" />
+                        <SummaryPill label="Promoted"  value={liveSummary.promoted}  color="bg-green-100 text-green-700" />
+                        <SummaryPill label="Graduated" value={liveSummary.graduated} color="bg-amber-100 text-amber-700" />
+                        <SummaryPill label="Retained"  value={liveSummary.retained}  color="bg-gray-100 text-gray-700" />
                     </div>
 
                     {!closePreview.ready_to_close && (
@@ -465,10 +534,51 @@ const AcademicYear = () => {
                         </div>
                     )}
 
-                    <div className="border rounded-xl max-h-64 overflow-y-auto mb-4">
-                        <PromotionTable rows={closePreview.plan?.map(p => ({
-                            id: p.student_id, ...p, first_name: p.name.split(' ')[0], last_name: p.name.split(' ').slice(1).join(' ')
-                        })) || []} compact />
+                    {/* Bulk promote actions */}
+                    {(closePreview.plan?.length || 0) > 0 && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                            <div className="text-sm text-gray-600">
+                                <strong>{closePreview.plan.length}</strong> abanyeshuri — hindura buri umunyeshuri uko ushaka:
+                            </div>
+                            <div className="flex gap-2">
+                                <button type="button" onClick={resetOverrides}
+                                    className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200">
+                                    Reset overrides
+                                </button>
+                                <button type="button"
+                                    onClick={() => {
+                                        const all = {};
+                                        closePreview.plan.forEach(p => {
+                                            all[p.student_id] = { action: 'promoted', to_level: nextLevelFor(p.trade, p.from_level) || p.from_level };
+                                        });
+                                        setOverrides(all);
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-bold hover:bg-green-200">
+                                    Promote all
+                                </button>
+                                <button type="button"
+                                    onClick={() => {
+                                        const all = {};
+                                        closePreview.plan.forEach(p => {
+                                            all[p.student_id] = { action: 'retained' };
+                                        });
+                                        setOverrides(all);
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200">
+                                    Retain all
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="border rounded-xl max-h-72 overflow-y-auto mb-4">
+                        <BulkPromoteTable
+                            rows={closePreview.plan || []}
+                            overrides={overrides}
+                            updateOverride={updateOverride}
+                            ladderFor={ladderFor}
+                            nextLevelFor={nextLevelFor}
+                        />
                     </div>
 
                     <label className="flex items-center gap-2 mb-3 text-sm font-medium text-gray-700">
@@ -477,7 +587,7 @@ const AcademicYear = () => {
                             onChange={e => setCreateNextYear(e.target.checked)}
                         />
                         Tangira umwaka mushya nyuma yo gufunga (
-                        <strong>{closePreview.pending_intake}</strong> applicants emejwe bategereje)
+                        <strong>{closePreview.pending_intake}</strong> applicants emejwe bategereje gufatwa)
                     </label>
 
                     {createNextYear && (
@@ -486,9 +596,27 @@ const AcademicYear = () => {
                         </div>
                     )}
 
+                    {/* Required confirmation */}
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer ${
+                        confirmClose ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-amber-200'
+                    }`}>
+                        <input type="checkbox" checked={confirmClose}
+                            onChange={e => setConfirmClose(e.target.checked)}
+                            className="mt-1" />
+                        <div>
+                            <div className="font-bold text-gray-800 text-sm">Wemeza ko umwaka {yearDetail.name} ushaka kuwufunga?</div>
+                            <div className="text-xs text-gray-600">
+                                Iyi gikorwa irakomeye: abanyeshuri bose bazasimburwa, abari kuri Level 5 (cyangwa 5b) bazatumbuka,
+                                naho umwaka uzashyirwa muri history.
+                            </div>
+                        </div>
+                    </label>
+
                     <div className="flex gap-3 mt-4">
-                        <button onClick={() => setCloseOpen(false)} className="flex-1 py-3 rounded-xl bg-gray-100 font-bold">Reka</button>
-                        <button onClick={submitClose} disabled={busy} className="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center justify-center gap-2">
+                        <button onClick={() => setCloseOpen(false)}
+                            className="flex-1 py-3 rounded-xl bg-gray-100 font-bold">Reka</button>
+                        <button onClick={submitClose} disabled={busy || !confirmClose}
+                            className="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold flex items-center justify-center gap-2">
                             {busy && <Loader2 className="animate-spin" size={16} />} <Lock size={16} /> Funga umwaka
                         </button>
                     </div>
@@ -590,6 +718,126 @@ const YearForm = ({ form, setForm, showSetCurrent }) => {
                     Toranya nk'umwaka w'ubu (current)
                 </label>
             )}
+        </div>
+    );
+};
+
+const BulkPromoteTable = ({ rows, overrides, updateOverride, ladderFor, nextLevelFor }) => {
+    const [search, setSearch] = useState('');
+    const filtered = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return rows;
+        return rows.filter(r =>
+            (r.name || '').toLowerCase().includes(q) ||
+            (r.reg_number || '').toLowerCase().includes(q) ||
+            (r.trade || '').toLowerCase().includes(q) ||
+            (r.from_level || '').toLowerCase().includes(q)
+        );
+    }, [rows, search]);
+
+    if (!rows?.length) {
+        return (
+            <div className="text-center py-10 text-gray-400 text-sm">
+                Nta munyeshuri usanzwe muri uyu mwaka.
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <div className="px-3 py-2 border-b bg-gray-50 sticky top-0 z-10">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Shakisha (izina, reg, trade, level)..."
+                    className="w-full px-3 py-1.5 rounded-lg border text-sm"
+                />
+            </div>
+            <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600 text-xs uppercase sticky top-[42px] z-10">
+                    <tr>
+                        <th className="px-3 py-2 text-left">Umunyeshuri</th>
+                        <th className="px-3 py-2 text-left">Trade · From</th>
+                        <th className="px-3 py-2 text-left">Action</th>
+                        <th className="px-3 py-2 text-left">Destination</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filtered.map(r => {
+                        const ovr = overrides[r.student_id] || {};
+                        const action = ovr.action || r.action;
+                        const isTerminal = !nextLevelFor(r.trade, r.from_level);
+                        const dropLevels = ladderFor(r.trade);
+                        const toLevel = action === 'graduated'
+                            ? null
+                            : action === 'retained'
+                                ? r.from_level
+                                : (ovr.to_level || r.to_level || nextLevelFor(r.trade, r.from_level) || r.from_level);
+                        const overridden = !!ovr.action;
+                        return (
+                            <tr key={r.student_id} className={`border-t ${overridden ? 'bg-amber-50/40' : ''}`}>
+                                <td className="px-3 py-2">
+                                    <div className="font-bold text-gray-800">{r.name}</div>
+                                    <div className="text-xs text-gray-500">{r.reg_number}</div>
+                                </td>
+                                <td className="px-3 py-2 text-xs">
+                                    <div className="text-gray-700">{r.trade}</div>
+                                    <div className="text-gray-500">{r.from_level || '—'}</div>
+                                </td>
+                                <td className="px-3 py-2">
+                                    <select
+                                        value={action}
+                                        onChange={e => {
+                                            const a = e.target.value;
+                                            if (a === 'promoted') {
+                                                updateOverride(r.student_id, {
+                                                    action: 'promoted',
+                                                    to_level: nextLevelFor(r.trade, r.from_level) || r.from_level,
+                                                });
+                                            } else {
+                                                updateOverride(r.student_id, { action: a, to_level: null });
+                                            }
+                                        }}
+                                        className={`px-2 py-1 rounded-lg border text-xs font-bold ${
+                                            action === 'graduated' ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                          : action === 'promoted'  ? 'bg-green-100 text-green-800 border-green-200'
+                                          : 'bg-gray-100 text-gray-800 border-gray-200'
+                                        }`}
+                                    >
+                                        <option value="promoted">Promote</option>
+                                        <option value="retained">Retain</option>
+                                        <option value="graduated">Graduate</option>
+                                    </select>
+                                </td>
+                                <td className="px-3 py-2">
+                                    {action === 'promoted' ? (
+                                        <select
+                                            value={toLevel || ''}
+                                            onChange={e => updateOverride(r.student_id, { action: 'promoted', to_level: e.target.value })}
+                                            className="px-2 py-1 rounded-lg border text-xs"
+                                        >
+                                            {dropLevels
+                                                .filter(l => l !== r.from_level) // can't promote to same
+                                                .map(l => <option key={l} value={l}>{l}</option>)
+                                            }
+                                            {/* if from_level is terminal, allow same just in case */}
+                                            {isTerminal && <option value={r.from_level}>{r.from_level} (same)</option>}
+                                        </select>
+                                    ) : action === 'graduated' ? (
+                                        <span className="text-xs font-bold text-amber-700">→ History (graduated)</span>
+                                    ) : (
+                                        <span className="text-xs text-gray-600">Stays at {r.from_level || '—'}</span>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                    {filtered.length === 0 && (
+                        <tr><td colSpan={4} className="text-center py-6 text-gray-400 text-xs">Nta byabonetse.</td></tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 };
