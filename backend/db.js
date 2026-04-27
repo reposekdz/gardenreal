@@ -686,6 +686,7 @@ const initAcademic = async () => {
         const tryAlter = async (sql) => {
             try { await connection.query(sql); } catch (_) { /* exists */ }
         };
+        await tryAlter(`ALTER TABLE students ADD COLUMN photo_url VARCHAR(500) NULL`);
         await tryAlter(`ALTER TABLE students ADD COLUMN academic_year_id INT NULL`);
         await tryAlter(`ALTER TABLE students ADD COLUMN graduation_status ENUM('in_progress','graduated') DEFAULT 'in_progress'`);
         await tryAlter(`ALTER TABLE students ADD COLUMN application_id INT NULL`);

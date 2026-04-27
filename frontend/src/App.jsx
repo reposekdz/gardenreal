@@ -49,6 +49,7 @@ import AdminLinkManager from './pages/AdminLinkManager';
 import AdminStaffManager from './pages/AdminStaffManager';
 import Applications from './pages/Applications';
 import AcademicYear from './pages/AcademicYear';
+import Graduates from './pages/Graduates';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
 
@@ -95,6 +96,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/academic-year" element={<AcademicYear />} />
+          <Route path="/graduates" element={<Graduates />} />
           <Route path="/students" element={<Students />} />
           <Route path="/discipline" element={<Discipline />} />
           <Route path="/finance" element={<Finance />} />

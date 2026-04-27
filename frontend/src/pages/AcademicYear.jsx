@@ -527,6 +527,20 @@ const AcademicYear = () => {
                         <SummaryPill label="Retained"  value={liveSummary.retained}  color="bg-gray-100 text-gray-700" />
                     </div>
 
+                    {closePreview.cohort_breakdown && (
+                        <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 via-white to-emerald-50 border border-amber-100 rounded-2xl">
+                            <p className="text-xs font-bold uppercase text-gray-700 mb-2">Cohort Engine — Auto MIXED split + linear ladders</p>
+                            <div className="flex flex-wrap gap-2">
+                                {Object.entries(closePreview.cohort_breakdown).map(([k, v]) => (
+                                    <span key={k} className="px-2 py-1 rounded-lg bg-white border border-gray-200 text-xs">
+                                        <span className="font-bold text-gray-700">{v}</span>
+                                        <span className="text-gray-500 ml-1">{k}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {!closePreview.ready_to_close && (
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm flex items-start gap-2 mb-4">
                             <AlertTriangle size={18} className="mt-0.5" />
@@ -784,6 +798,9 @@ const BulkPromoteTable = ({ rows, overrides, updateOverride, ladderFor, nextLeve
                                 <td className="px-3 py-2 text-xs">
                                     <div className="text-gray-700">{r.trade}</div>
                                     <div className="text-gray-500">{r.from_level || '—'}</div>
+                                    {r.cohort && (
+                                        <div className="text-[10px] text-amber-700 mt-0.5">{r.cohort}</div>
+                                    )}
                                 </td>
                                 <td className="px-3 py-2">
                                     <select

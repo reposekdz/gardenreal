@@ -27,27 +27,88 @@ const db = require('../db');
    Promotion ladder per trade is data-driven and lives in `LEVEL_LADDER`.
 */
 
-// Ordered ladder per trade.  When closing a year, the engine moves each
-// student to the next entry; if there is no next entry the student is
-// graduated.  Trades not in the map fall back to `DEFAULT_LADDER`.
+/* ────────────────────────────────────────────────────────────────
+   Promotion ladders / cohort buckets per trade.
+
+   Software Development (SOD)        : L3 → L4 → L5 → graduated
+   Building & Construction (BDC)     : L3 → L4 → L5 → graduated
+   Automobile Technology   (AUTO)    : split-cohort engine — there is no
+                                       1-to-1 next level. Students are
+                                       MIXED across sections each year:
+       L3                  → split balanced into  L4a / L4b
+       L4a + L4b combined  → mixed and split into L5a / L5b
+       L5a + L5b           → graduated  (history)
+   ──────────────────────────────────────────────────────────────── */
 const DEFAULT_LADDER = ['Level 3', 'Level 4', 'Level 5'];
 const LEVEL_LADDER = {
     'Software Development':       ['Level 3', 'Level 4', 'Level 5'],
     'Building and Construction':  ['Level 3', 'Level 4', 'Level 5'],
+    // For UI / dropdown purposes only — the real promotion of Auto is
+    // computed by the cohort engine (autoCohortPromotion) below.
     'Automobile Technology':      ['Level 3', 'Level 4a', 'Level 4b', 'Level 5a', 'Level 5b'],
 };
+
+const AUTO_TRADE = 'Automobile Technology';
 
 function nextLevelFor(trade, currentLevel) {
     const ladder = LEVEL_LADDER[trade] || DEFAULT_LADDER;
     const idx = ladder.indexOf(currentLevel);
     if (idx === -1) {
-        // Unknown level → leave student at same level (retained) so admin can fix manually.
         return { next: currentLevel, terminal: false, unknown: true };
     }
     if (idx === ladder.length - 1) {
         return { next: null, terminal: true, unknown: false };
     }
     return { next: ladder[idx + 1], terminal: false, unknown: false };
+}
+
+/**
+ * Auto cohort promotion: deterministic balanced split.
+ * Sort is stable (last_name, first_name, id) so the same input always yields
+ * the same assignment; admins can override individuals afterwards.
+ *
+ *  - L3      → alternating L4a / L4b   (i%2 === 0 → L4a)
+ *  - L4a/4b  → combined, sorted, alternating L5a / L5b
+ *  - L5a/5b  → graduated
+ *  - other   → retained (unknown level — flagged for manual fix)
+ */
+function autoCohortPromotion(students) {
+    const sortFn = (a, b) =>
+        (a.last_name || '').localeCompare(b.last_name || '') ||
+        (a.first_name || '').localeCompare(b.first_name || '') ||
+        a.id - b.id;
+
+    const l3   = students.filter(s => s.level === 'Level 3').sort(sortFn);
+    const l4   = students.filter(s => s.level === 'Level 4a' || s.level === 'Level 4b').sort(sortFn);
+    const l5   = students.filter(s => s.level === 'Level 5a' || s.level === 'Level 5b').sort(sortFn);
+    const odd  = students.filter(s => !['Level 3','Level 4a','Level 4b','Level 5a','Level 5b'].includes(s.level));
+
+    const out = [];
+    l3.forEach((s, i) => out.push({
+        student: s,
+        action: 'promoted',
+        to_level: i % 2 === 0 ? 'Level 4a' : 'Level 4b',
+        cohort: 'L3 → L4a/L4b (mixed split)',
+    }));
+    l4.forEach((s, i) => out.push({
+        student: s,
+        action: 'promoted',
+        to_level: i % 2 === 0 ? 'Level 5a' : 'Level 5b',
+        cohort: 'L4a+L4b → L5a/L5b (mixed split)',
+    }));
+    l5.forEach(s => out.push({
+        student: s,
+        action: 'graduated',
+        to_level: null,
+        cohort: 'L5a+L5b → Graduated',
+    }));
+    odd.forEach(s => out.push({
+        student: s,
+        action: 'retained',
+        to_level: s.level,
+        cohort: 'Unknown level — manual fix needed',
+    }));
+    return out;
 }
 
 /* ─── Years ───────────────────────────────────────────────────── */
@@ -340,31 +401,67 @@ exports.endTerm = async (req, res) => {
 
 /* ─── Year closure (promotion engine) ─────────────────────────── */
 
-async function buildPromotionPlan(fromYearId) {
-    const [students] = await db.query(
+/**
+ * Build promotion plan for a year. Uses linear ladder for SOD/BDC and
+ * the Auto cohort engine (mixed split) for Auto students.
+ *
+ * @param {number|null} executor   Optional db connection (for inside a TX).
+ */
+async function buildPromotionPlan(fromYearId, executor = db) {
+    const [students] = await executor.query(
         `SELECT id, reg_number, first_name, last_name, trade, level, current_status, academic_year_id
            FROM students
           WHERE current_status IN ('active','sick','on_leave','suspended')
-            AND (academic_year_id = ? OR academic_year_id IS NULL)`,
+            AND (academic_year_id = ? OR academic_year_id IS NULL)
+          ORDER BY trade, level, last_name, first_name, id`,
         [fromYearId]
     );
 
-    const plan = students.map(s => {
-        const { next, terminal, unknown } = nextLevelFor(s.trade, s.level);
-        let action;
-        if (unknown) action = 'retained';
-        else if (terminal) action = 'graduated';
-        else action = 'promoted';
-        return {
-            student_id: s.id,
-            reg_number: s.reg_number,
-            name: `${s.first_name} ${s.last_name}`,
-            trade: s.trade,
-            from_level: s.level,
-            to_level: terminal ? null : next,
-            action,
-        };
-    });
+    // Group by trade
+    const byTrade = new Map();
+    for (const s of students) {
+        const t = s.trade || 'Unknown';
+        if (!byTrade.has(t)) byTrade.set(t, []);
+        byTrade.get(t).push(s);
+    }
+
+    const plan = [];
+    for (const [trade, list] of byTrade.entries()) {
+        if (trade === AUTO_TRADE) {
+            const cohortRows = autoCohortPromotion(list);
+            for (const c of cohortRows) {
+                const s = c.student;
+                plan.push({
+                    student_id: s.id,
+                    reg_number: s.reg_number,
+                    name: `${s.first_name} ${s.last_name}`,
+                    trade,
+                    from_level: s.level,
+                    to_level: c.to_level,
+                    action: c.action,
+                    cohort: c.cohort,
+                });
+            }
+        } else {
+            for (const s of list) {
+                const { next, terminal, unknown } = nextLevelFor(trade, s.level);
+                let action, to_level;
+                if (unknown)        { action = 'retained';  to_level = s.level; }
+                else if (terminal)  { action = 'graduated'; to_level = null; }
+                else                { action = 'promoted';  to_level = next; }
+                plan.push({
+                    student_id: s.id,
+                    reg_number: s.reg_number,
+                    name: `${s.first_name} ${s.last_name}`,
+                    trade,
+                    from_level: s.level,
+                    to_level,
+                    action,
+                    cohort: action === 'graduated' ? `${trade} L5 → Graduated` : `${trade} ladder`,
+                });
+            }
+        }
+    }
 
     return plan;
 }
@@ -399,6 +496,13 @@ exports.previewClose = async (req, res) => {
             { promoted: 0, graduated: 0, retained: 0 }
         );
 
+        // Cohort breakdown (e.g. how many Auto students go L3→4a, L3→4b, etc.)
+        const cohortBreakdown = {};
+        for (const p of plan) {
+            const key = `${p.trade} :: ${p.from_level || '—'} → ${p.to_level || 'graduated'}`;
+            cohortBreakdown[key] = (cohortBreakdown[key] || 0) + 1;
+        }
+
         // Pending intake = approved-but-not-yet-enrolled applications
         const [[pendingIntake]] = await db.query(`
             SELECT COUNT(*) AS n FROM applications
@@ -411,6 +515,7 @@ exports.previewClose = async (req, res) => {
             ready_to_close: allEnded,
             plan,
             summary,
+            cohort_breakdown: cohortBreakdown,
             pending_intake: pendingIntake.n,
         });
     } catch (err) {
@@ -512,15 +617,17 @@ exports.closeYear = async (req, res) => {
             }
         }
 
-        // 3) build promotion plan and apply
-        const [students] = await conn.query(
-            `SELECT id, trade, level, current_status
-               FROM students
+        // 3) build promotion plan with the cohort engine + apply overrides.
+        // We lock all eligible student rows first to make the close transactional.
+        await conn.query(
+            `SELECT id FROM students
               WHERE current_status IN ('active','sick','on_leave','suspended')
                 AND (academic_year_id = ? OR academic_year_id IS NULL)
               FOR UPDATE`,
             [id]
         );
+
+        const plan = await buildPromotionPlan(id, conn);
 
         const overrideMap = new Map();
         if (Array.isArray(overrides)) {
@@ -530,25 +637,26 @@ exports.closeYear = async (req, res) => {
         }
 
         let promoted = 0, graduated = 0, retained = 0;
-        for (const s of students) {
-            const ovr = overrideMap.get(s.id);
-            let action, toLevel = s.level;
+        for (const p of plan) {
+            const ovr = overrideMap.get(p.student_id);
+            let action  = p.action;
+            let toLevel = p.to_level;
+            let cohort  = p.cohort || null;
 
             if (ovr) {
-                action = ovr.action;
-                if (action === 'promoted') {
-                    toLevel = ovr.to_level || nextLevelFor(s.trade, s.level).next || s.level;
-                } else if (action === 'graduated') {
+                cohort = (cohort ? cohort + ' · ' : '') + 'manual override';
+                if (ovr.action === 'promoted') {
+                    action  = 'promoted';
+                    toLevel = ovr.to_level || p.to_level
+                              || nextLevelFor(p.trade, p.from_level).next
+                              || p.from_level;
+                } else if (ovr.action === 'graduated') {
+                    action  = 'graduated';
                     toLevel = null;
                 } else {
-                    action = 'retained';
-                    toLevel = s.level;
+                    action  = 'retained';
+                    toLevel = p.from_level;
                 }
-            } else {
-                const r = nextLevelFor(s.trade, s.level);
-                if (r.unknown) { action = 'retained'; toLevel = s.level; }
-                else if (r.terminal) { action = 'graduated'; toLevel = null; }
-                else { action = 'promoted'; toLevel = r.next; }
             }
 
             if (action === 'promoted') {
@@ -557,7 +665,7 @@ exports.closeYear = async (req, res) => {
                         SET level = ?,
                             academic_year_id = ?
                       WHERE id = ?`,
-                    [toLevel, newYearId, s.id]
+                    [toLevel, newYearId, p.student_id]
                 );
                 promoted++;
             } else if (action === 'graduated') {
@@ -567,14 +675,14 @@ exports.closeYear = async (req, res) => {
                             graduation_status = 'graduated',
                             academic_year_id = ?
                       WHERE id = ?`,
-                    [id, s.id]
+                    [id, p.student_id]
                 );
                 graduated++;
             } else {
                 if (newYearId) {
                     await conn.query(
                         `UPDATE students SET academic_year_id = ? WHERE id = ?`,
-                        [newYearId, s.id]
+                        [newYearId, p.student_id]
                     );
                 }
                 retained++;
@@ -586,15 +694,15 @@ exports.closeYear = async (req, res) => {
                      from_trade, to_trade, from_level, to_level, action, notes, created_by)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    s.id,
+                    p.student_id,
                     id,
                     action === 'graduated' ? null : (newYearId || null),
-                    s.trade,
-                    s.trade,
-                    s.level,
+                    p.trade,
+                    p.trade,
+                    p.from_level,
                     toLevel,
                     action,
-                    ovr ? 'manual override' : 'auto by ladder',
+                    cohort || 'auto by cohort engine',
                     req.user?.id || null,
                 ]
             );
@@ -651,5 +759,141 @@ exports.listPromotions = async (req, res) => {
     } catch (err) {
         console.error('listPromotions', err);
         res.status(500).json({ message: 'Habaye ikibazo.' });
+    }
+};
+
+/* ─── Graduates yearbook ──────────────────────────────────────────
+   Lists every student archived by `student_promotions.action='graduated'`,
+   grouped by academic year and trade. Used by the printable yearbook
+   roster in the front-end (frontend/src/pages/Graduates.jsx).
+*/
+exports.listGraduates = async (req, res) => {
+    try {
+        const { year_id, trade, search, limit = 5000 } = req.query;
+
+        let sql = `
+            SELECT
+                p.id                   AS promotion_id,
+                p.created_at           AS graduated_at,
+                p.from_academic_year_id,
+                p.from_trade,
+                p.from_level,
+                p.to_level,
+                p.notes                AS promotion_notes,
+                fy.name                AS academic_year_name,
+                fy.start_date          AS academic_year_start,
+                fy.end_date            AS academic_year_end,
+                s.id                   AS student_id,
+                s.reg_number,
+                s.first_name,
+                s.last_name,
+                s.gender,
+                s.date_of_birth,
+                s.contact_phone,
+                s.contact_email,
+                s.guardian_name,
+                s.guardian_phone,
+                s.address_district,
+                s.address_sector,
+                s.trade,
+                s.level                AS final_level,
+                s.year_enrolled,
+                s.student_type,
+                s.photo_url
+              FROM student_promotions p
+              JOIN students s         ON s.id = p.student_id
+         LEFT JOIN academic_years fy  ON fy.id = p.from_academic_year_id
+             WHERE p.action = 'graduated'
+        `;
+        const params = [];
+        if (year_id) {
+            sql += ' AND p.from_academic_year_id = ?';
+            params.push(year_id);
+        }
+        if (trade) {
+            sql += ' AND s.trade = ?';
+            params.push(trade);
+        }
+        if (search) {
+            sql += ` AND (
+                s.first_name LIKE ? OR s.last_name LIKE ?
+                OR s.reg_number LIKE ?
+                OR CONCAT(s.first_name, ' ', s.last_name) LIKE ?
+            )`;
+            const q = `%${search}%`;
+            params.push(q, q, q, q);
+        }
+
+        const safeLimit = Math.max(1, Math.min(10000, parseInt(limit, 10) || 5000));
+        sql += `
+            ORDER BY fy.start_date DESC, fy.id DESC,
+                     s.trade ASC, s.last_name ASC, s.first_name ASC
+            LIMIT ${safeLimit}
+        `;
+
+        const [rows] = await db.query(sql, params);
+
+        // Distinct academic years & trades present in graduates table — used
+        // by the front-end filter chips (no extra round-trip needed).
+        const [filterYearsRows] = await db.query(`
+            SELECT DISTINCT fy.id, fy.name, fy.start_date, fy.end_date
+              FROM student_promotions p
+              JOIN academic_years fy ON fy.id = p.from_academic_year_id
+             WHERE p.action = 'graduated'
+             ORDER BY fy.start_date DESC, fy.id DESC
+        `);
+        const [filterTradesRows] = await db.query(`
+            SELECT DISTINCT s.trade
+              FROM student_promotions p
+              JOIN students s ON s.id = p.student_id
+             WHERE p.action = 'graduated' AND s.trade IS NOT NULL
+             ORDER BY s.trade ASC
+        `);
+
+        // Group by academic year then trade.
+        const groupsMap = new Map();
+        for (const r of rows) {
+            const yKey = r.academic_year_name
+                || (r.from_academic_year_id ? `Year #${r.from_academic_year_id}` : 'Imyaka itazwi');
+            if (!groupsMap.has(yKey)) {
+                groupsMap.set(yKey, {
+                    year_name:  yKey,
+                    year_id:    r.from_academic_year_id,
+                    start_date: r.academic_year_start,
+                    end_date:   r.academic_year_end,
+                    trades:     {},
+                    total:      0,
+                });
+            }
+            const g = groupsMap.get(yKey);
+            const tKey = r.trade || 'Itazwi';
+            if (!g.trades[tKey]) g.trades[tKey] = [];
+            g.trades[tKey].push(r);
+            g.total += 1;
+        }
+
+        // Convert trades to a sorted array per group.
+        const groups = [...groupsMap.values()].map(g => ({
+            ...g,
+            trades: Object.entries(g.trades)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([trade, students]) => ({
+                    trade,
+                    count: students.length,
+                    students,
+                })),
+        }));
+
+        res.json({
+            total: rows.length,
+            groups,
+            filters: {
+                years:  filterYearsRows,
+                trades: filterTradesRows.map(r => r.trade),
+            },
+        });
+    } catch (err) {
+        console.error('listGraduates', err);
+        res.status(500).json({ message: 'Habaye ikibazo gusoma abasoje.' });
     }
 };

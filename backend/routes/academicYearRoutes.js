@@ -11,6 +11,7 @@ router.get('/',                verifyToken, verifyRole(READ),   ctrl.listYears);
 router.get('/current',         verifyToken, verifyRole(READ),   ctrl.getCurrentYear);
 router.get('/ladder',          verifyToken, verifyRole(READ),   ctrl.getLadder);
 router.get('/promotions',      verifyToken, verifyRole(READ),   ctrl.listPromotions);
+router.get('/graduates',       verifyToken, verifyRole(READ),   ctrl.listGraduates);
 router.get('/:id',             verifyToken, verifyRole(READ),   ctrl.getYear);
 router.get('/:id/preview-close', verifyToken, verifyRole(ADMINS), ctrl.previewClose);
 

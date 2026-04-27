@@ -101,6 +101,7 @@ const Layout = () => {
         { to: '/notifications', icon: Bell, label: 'Notifications', show: true, badge: unreadCount },
         { to: '/applications', icon: FileText, label: t('nav.applications') || 'Applications', show: isAdmin || isDod || isAccountant },
         { to: '/academic-year', icon: Calendar, label: t('nav.academicYear') || 'Academic Year', show: isAdmin || user.role === 'director' },
+        { to: '/graduates', icon: GraduationCap, label: t('nav.graduates') || 'Abasoje', show: isAdmin || user.role === 'director' || user.role === 'registrar' || isDod || isAccountant },
         { to: '/students', icon: Users, label: t('nav.students'), show: isAdmin || isDod || isAccountant },
         { to: '/link-manager', icon: Link2, label: 'Link Manager', show: isAdmin || isDod || isAccountant },
         { to: '/discipline', icon: ShieldAlert, label: t('nav.discipline'), show: isAdmin || isDod },

@@ -23,8 +23,28 @@ Full-stack web application for Garden TVET School.
 - Configured for `vm` deployment running `bash start-dev.sh`.
 - For production, a hosted MySQL via `DATABASE_URL` is recommended (the backend already supports it with SSL).
 
-## Academic Year & Promotion System (April 2026)
+## Academic Year, Cohort Engine & Graduates Yearbook (April 2026)
 A real (no mocks) academic year management module is wired end-to-end.
+
+### Cohort Engine (`backend/controllers/academicYearController.js`)
+- `autoCohortPromotion(students)` — handles **Automobile Technology** with mixed split-cohort logic:
+  - L3 → alternating split into **L4a/L4b** (sorted by last_name/first_name/id for deterministic output).
+  - L4a + L4b → combined and re-split into **L5a/L5b** (mixing students across original cohorts).
+  - L5a + L5b → graduated. Each promotion row carries a `cohort` label like `Auto L4a → L5b`.
+- `buildPromotionPlan(fromYearId, executor)` — runs SOD/BDC linear ladder + AUTO cohort engine, accepts a transaction connection so `closeYear` locks rows and uses the same plan.
+- `previewClose` returns `cohort_breakdown` (per-target-level counts) so the UI shows the engine's plan before confirming.
+- `closeYear` is fully transactional, applies admin overrides on top of the engine's plan, and stores the cohort label in `student_promotions.notes`.
+- `listGraduates` (`GET /api/academic-years/graduates`) returns graduates grouped by year → trade with filter metadata; supports `year_id`, `trade`, `search`.
+
+### Graduates Yearbook (`frontend/src/pages/Graduates.jsx`, route `/graduates`)
+- Yearbook UI grouped by academic year and trade with collapsible sections.
+- Photo grid with initials fallback (uses new `students.photo_url` column added via idempotent migration in `backend/db.js`).
+- Filters: year, trade, search; stat cards for totals.
+- Detail modal with reg number, contact, address, guardian, cohort path, graduation date.
+- Print PDF roster via `window.print()` + `@media print` styles in a popup window (no extra deps).
+- Nav item gated to admin/director/registrar/dod/accountant in `frontend/src/layouts/Layout.jsx`.
+
+### Original module (still active)
 
 ### Database (idempotent migrations in `backend/db.js`)
 - `academic_years(id, name, start/end_date, status[planning|active|closed], is_current, closed_at, closed_by)`
