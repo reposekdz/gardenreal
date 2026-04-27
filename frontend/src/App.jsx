@@ -8,9 +8,22 @@ import './index.css';
 // Layouts
 import PublicLayout from './layouts/PublicLayout';
 import Layout from './layouts/Layout';
+import TeacherLayout from './layouts/TeacherLayout';
+import StudentLayout from './layouts/StudentLayout';
 
 // Auth
 import Login from './pages/Login';
+
+// Student
+import StudentDashboard from './pages/StudentDashboard';
+
+// Teacher sub-pages
+import TeacherOverview from './pages/teacher/TeacherOverview';
+import TeacherNotes from './pages/teacher/TeacherNotes';
+import TeacherQuestions from './pages/teacher/TeacherQuestions';
+import TeacherStudents from './pages/teacher/TeacherStudents';
+import TeacherConduct from './pages/teacher/TeacherConduct';
+import TeacherEngagement from './pages/teacher/TeacherEngagement';
 
 // Parent Management
 import ParentManagement from './pages/ParentManagement';
@@ -34,7 +47,6 @@ import DrivingInstructorDashboard from './pages/public/DrivingInstructorDashboar
 import KwigaPage from './pages/public/KwigaPage';
 import KwigaTradePage from './pages/public/KwigaTradePage';
 import KwigaNotesPage from './pages/public/KwigaNotesPage';
-import TeacherDashboard from './pages/TeacherDashboard';
 import MobileBottomNav from './components/MobileBottomNav';
 
 // App Pages (Protected)
@@ -89,8 +101,20 @@ function App() {
           <Route path="/kwiga/:tradeCode/:level" element={<KwigaNotesPage />} />
         </Route>
 
-        {/* Teacher Portal (standalone - own header) */}
-        <Route path="/teacher" element={<TeacherDashboard />} />
+        {/* Teacher Portal — sidebar layout matching other roles */}
+        <Route element={<TeacherLayout />}>
+          <Route path="/teacher" element={<TeacherOverview />} />
+          <Route path="/teacher/notes" element={<TeacherNotes />} />
+          <Route path="/teacher/questions" element={<TeacherQuestions />} />
+          <Route path="/teacher/students" element={<TeacherStudents />} />
+          <Route path="/teacher/conduct" element={<TeacherConduct />} />
+          <Route path="/teacher/engagement" element={<TeacherEngagement />} />
+        </Route>
+
+        {/* Student Portal */}
+        <Route element={<StudentLayout />}>
+          <Route path="/student-dashboard" element={<StudentDashboard />} />
+        </Route>
 
         {/* Protected App Routes (under Layout) */}
         <Route element={<Layout />}>

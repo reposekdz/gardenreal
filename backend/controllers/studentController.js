@@ -243,6 +243,24 @@ exports.createStudent = async (req, res) => {
             student_name: `${first_name} ${last_name}`
         }).catch(err => console.log('SMS notification skipped:', err.message));
 
+        // Generate a default password so the student can log in via the portal.
+        // Default = last 4 digits of contact_phone (or "0000" fallback).
+        try {
+            const bcrypt = require('bcryptjs');
+            const { computeDefaultPassword } = require('../routes/studentAuthRoutes');
+            const hint = computeDefaultPassword(contact_phone, finalRegNumber);
+            const hash = bcrypt.hashSync(hint, 10);
+            await db.execute(
+                'UPDATE students SET password_hash = ?, default_password_hint = ?, must_change_password = 1 WHERE id = ?',
+                [hash, hint, studentId]
+            );
+            // SMS the credentials to the student (best effort)
+            if (contact_phone) {
+                const msg = `Murakaza neza ${first_name} kuri Garden TVET! Kode yawe: ${finalRegNumber}, Ijambobanga: ${hint}. Hindura ijambobanga unjira bwa mbere.`;
+                smsService.sendSMS(contact_phone, msg).catch(() => {});
+            }
+        } catch (e) { console.log('Default password setup skipped:', e.message); }
+
         res.status(201).json({
             message: 'Umunyeshuri yanditswe neza!',
             studentId: result.insertId,

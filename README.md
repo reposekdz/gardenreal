@@ -1,336 +1,484 @@
-# 🎓 Garden TVET School — Sisitemu y'Icunga Ishuri
+# Garden TVET School — Sisitemu Y'imicungire y'Ishuri
 
-> **Garden TVET School** ni ishuri ry'imyuga ribereye **Intara y'Iburasirazuba, Akarere ka Ngoma, u Rwanda**.
-> Iyi sisitemu ni umutima wa digitale w'ishuri — icunga abana, ababyeyi, abarimu, abiga gutwara, amafaranga, ibikoresho, kwemererwa, gufunga umwaka, kurangiza no kubika amateka y'abasoje burundu — yose ku gice kimwe.
-
----
-
-## 📜 Ibikubiyemo
-1. [Icyo iyi sisitemu ari cyo](#icyo-iyi-sisitemu-ari-cyo)
-2. [Akamaro ku ishuri (administration)](#1-akamaro-ku-ishuri-administration)
-3. [Akamaro ku banyeshuri (students)](#2-akamaro-ku-banyeshuri-students)
-4. [Akamaro ku babyeyi (parents)](#3-akamaro-ku-babyeyi-parents)
-5. [Akamaro ku barimu (teachers / instructors)](#4-akamaro-ku-barimu-teachers--instructors)
-6. [Akamaro ku biga gutwara (driving school learners)](#5-akamaro-ku-biga-gutwara-driving-school-learners)
-7. [Akamaro ku ma-Employers (sosiyete zifata abasoje)](#6-akamaro-ku-ma-employers)
-8. [Uburyo ifasha ishuri kwinjiza amafaranga](#uburyo-ifasha-ishuri-kwinjiza-amafaranga)
-9. [Cohort Engine — Algoritime yo guhindura imyaka (Auto Trade)](#cohort-engine--algoritime-yo-guhindura-imyaka)
-10. [Yearbook y'Abasoje (Graduates)](#yearbook-yabasoje)
-11. [Employer Outreach (Send Roster ku ma-Employers)](#employer-outreach-send-roster-ku-ma-employers)
-12. [Stack ya tekinike & Setup](#stack-ya-tekinike--setup)
+> **Garden TVET** ni sisitemu yuzuye ihuza ubuyobozi bw'ishuri ry'ubumenyingiro
+> (TVET) n'amasomo y'amategeko y'umuhanda, ihuriza hamwe abayobozi,
+> abarimu, abanyeshuri, ababyeyi, n'umuryango ku rubuga rumwe.
+>
+> Yubatswe muri **React + Vite** ku ruhande rw'imbere, **Express + MySQL** ku
+> ruhande rw'inyuma, kandi ikoresha **JWT** kuri authenticationi.
+> Sisitemu ikora muri **Kinyarwanda** by'umwihariko, hamwe n'ururimi rw'icyongereza
+> n'igifaransa nk'amahitamo.
 
 ---
 
-## Icyo iyi sisitemu ari cyo
+## 📑 Ibirimo (Table of contents)
 
-Garden TVET School itanga **trade eshatu nyamukuru** + **Driving School**:
-
-| Trade | Igisobanuro | Ladder |
-|---|---|---|
-| **SOD** — Software Development | Iby'amaprogramu | L3 → L4 → L5 → Soje |
-| **BDC** — Building & Construction | Ubwubatsi | L3 → L4 → L5 → Soje |
-| **AUTO** — Automobile Technology | Imyuga ya moto/imodoka | L3 → **L4a + L4b** → **L5a + L5b** → Soje (mixed-cohort split) |
-| **Driving School** | Kwiga gutwara imodoka | Course-based, na exam |
-
-Iyi sisitemu **ihuza buri ruhande** rwose: applications → enrollment → kwiga → ibizamini → kurangiza → kubikwa mu mateka burundu.
-
----
-
-## 1. Akamaro ku ishuri (administration)
-
-### Igihe cyacitse n'akazi gakorwa n'abakozi
-Mbere y'iyi sisitemu, gufunga umwaka byasabaga **iminsi myinshi**:
-- Mwarimu wese yagombaga gushyira amazina y'abana ku rupapuro
-- Director yagombaga gukuramo ku ntoki abasibye ishuri
-- Registrar yagombaga kwandika icyangombwa cy'umwana wese kuri buri page
-- Nyuma yo kunyura mu byumba byose, ubwo ni bwo bandika abasoje
-
-➡️ **Iyi sisitemu ibikora mu masegonda 5**, mu mwanya wo kumara iminsi 7.
-➡️ Ibika ibyo bikorwa byose mu **audit trail** kugira ngo igihe cyose tube tubizi uwafashe icyemezo.
-
-### Ntashobora kwibeshya
-- Iyo ufunguye umwaka uvuga **2026**, abana ba Level 3 mu mwaka **2025** **bose bahita bajya kuri Level 4**.
-- Sisitemu **iziga ababuze isuzuma**, bakagumishwa.
-- **Auto Trade**: sisitemu **ihuza L4a na L4b**, ikongera **kubatandukanya** mu buryo bw'**alphabetic alternating split**.
-
-### Role-based access
-Buri muntu wese arihiye **icyemezo cye gusa**:
-| Role | Icyo akora |
-|---|---|
-| Admin | Byose |
-| Director | Gufunga umwaka, kureba/kohereza roster, gukurikirana |
-| Registrar | Kwandika abana, gucunga abasoje + employers |
-| DOD (Director of Discipline) | Discipline log, abana, attendance |
-| Accountant | Amafaranga, fees, payments |
-| Stock Manager | Ibikoresho gusa |
-| Teacher / Instructor | Abanyeshuri be, attendance, grades |
-| Student | Konti ye, course notes, grades |
-| Parent | Abana be gusa |
+1. [Igitekerezo nyamukuru](#1-igitekerezo-nyamukuru)
+2. [Tekinoloji yakoreshejwe](#2-tekinoloji-yakoreshejwe)
+3. [Imiterere y'umushinga](#3-imiterere-yumushinga)
+4. [Inzira yo gutangira](#4-inzira-yo-gutangira)
+5. [Inzego z'abakoresha (User roles)](#5-inzego-zabakoresha)
+6. [Modules zose n'akamaro kazo](#6-modules-zose-nakamaro-kazo)
+   - [6.1 Urubuga rusange](#61-urubuga-rusange-public-site)
+   - [6.2 Konti y'umuyobozi (Admin)](#62-konti-yumuyobozi-admin)
+   - [6.3 Konti y'umuyobozi w'imyitwarire (DOD)](#63-konti-yumuyobozi-wimyitwarire-dod)
+   - [6.4 Konti y'umubikabaranga (Accountant)](#64-konti-yumubikabaranga-accountant)
+   - [6.5 Konti y'ushinzwe ububiko (Stock Manager)](#65-konti-yushinzwe-ububiko-stock-manager)
+   - [6.6 Konti y'umwarimu (Teacher)](#66-konti-yumwarimu-teacher)
+   - [6.7 Konti y'umunyeshuri (Student)](#67-konti-yumunyeshuri-student)
+   - [6.8 Konti y'umubyeyi (Parent)](#68-konti-yumubyeyi-parent)
+   - [6.9 Ishuri ry'amategeko y'umuhanda](#69-ishuri-ryamategeko-yumuhanda)
+   - [6.10 Kwiga — Inyandiko z'amasomo](#610-kwiga--inyandiko-zamasomo)
+7. [Endpoints zose za API](#7-endpoints-zose-za-api)
+8. [Database — imbonerahamwe nyamukuru](#8-database--imbonerahamwe-nyamukuru)
+9. [Umutekano](#9-umutekano)
+10. [Ibyumba bishyaho](#10-ibyumba-bishyaho-deployment)
 
 ---
 
-## 2. Akamaro ku banyeshuri (students)
+## 1. Igitekerezo nyamukuru
 
-Buri munyeshuri **afite konti yihariye** ahabwa iyo yiyandikishije. Konti ye imuha:
+Garden TVET ifite intego eshatu z'ingenzi:
 
-- **Dashboard yihariye**: amazina ye, ifoto, trade, level, umwaka.
-- **Course Notes**: amasomo akoresha (PDF, slides, videos) ushyizweho na mwarimu — **abasoma byose mu telefone**.
-- **Grades**: kureba amanota ya buri term, **chart** y'iterambere.
-- **Attendance**: kureba uburyo yagiye yitabira.
-- **Driving Rules Practice** (iyo ari mu driving school): exam za practice, igisubizo cy'icyo yibukije.
-- **Q&A**: gusaba mwarimu igisubizo ku byo atumva, mwarimu akamusubiriza.
-- **Notifications**: amatangazo agezweho ku magufa — fees, exam, ihindurwa rya schedule.
-- **Profile**: kuvugurura ifoto, telephone, addresse.
-- **Student-type recognition**: abafite **bursary/government scholarship** bigaragazwa ukundi (kugira ngo finance icunge bonyine).
-
-➡️ Igisubizo: **abanyeshuri bishimira ishuri**, kuko buri kintu cyose bagikora mu **buryo bworoshye** (telefone cyangwa laptop).
+1. **Korohereza ubuyobozi bw'ishuri** — kwandika abanyeshuri, kugenzura
+   imyitwarire, kwakira amafaranga y'ishuri, kugenzura ububiko, no gukurikirana
+   abakora ku ishuri.
+2. **Guhuza umuryango wose w'ishuri** — abarimu boherereza inyandiko
+   z'amasomo, abanyeshuri bakurikirana amanota n'amafaranga, ababyeyi bareba
+   ibyabo, n'abakorera hanze (employers) bashobora kwakira abasoje.
+3. **Kongera urubuga rwa rusange** — gutangaza amakuru, kwakira ababasaba
+   kuza muri kaminuza, no gutanga amasomo y'amategeko y'umuhanda kuri online.
 
 ---
 
-## 3. Akamaro ku babyeyi (parents)
+## 2. Tekinoloji yakoreshejwe
 
-Iyi ni **revolution** ku ababyeyi b'i Garden TVET. Mbere, ababyeyi bagombaga gukora urugendo bava i Kibungo cyangwa Kayonza bagana ishuri kugira ngo bamenye uko umwana ahagaze. Ubu, **bose bahita bareba mu telefone**.
+### Imbere (Frontend)
+- **React 18** + **Vite** — UI ihuza ihereza vuba.
+- **Tailwind CSS** + Lucide icons — imisusire ya none.
+- **Zustand** — kubika ibya konti (auth store).
+- **React Router 6** — ingendo z'amapaji.
+- **Axios** — kuvugana na API.
+- **i18next** — guhindura ururimi (Kinyarwanda / Icyongereza / Igifaransa).
+- **react-toastify** — ubutumwa bugaragara.
+- **PDF.js** — gusoma PDF no kuvana cover ya mbere.
 
-### Parent Portal — `/parent-portal`
-Iyo umubyeyi yiyandikishije akemerwa, akabona:
+### Inyuma (Backend)
+- **Node.js + Express** — server ya API.
+- **MySQL** (mysql2) — database nyamukuru.
+- **JWT** (jsonwebtoken) — token yo kwemeza umukoresha.
+- **bcryptjs** — guhisha amabanga (password hashing).
+- **Multer** — kohereza file (PDF, amafoto).
+- **node-cron** — imirimo y'iteka (kohereza ubutumwa, gusubiramo statistike).
+- **Nodemailer** + **SMS service** — kohereza email/SMS.
 
-- **Abana bose** ariho yapfunditse kuri sisitemu (umubyeyi umwe ashobora kugira abana benshi).
-- **Amanota** ya buri mwana.
-- **Attendance**: niba umwana yari mu ishuri uyu munsi cyangwa atari.
-- **Discipline log**: amakosa aba yarakoze (ahari) n'igihano cyabigeneye.
-- **Fees & Payments**: ayarasohotse, ayasigaye, n'**ahantu yo kwishyura**.
-- **Notifications**: SMS na in-app messages (urugero: "Umwana wawe ntiyazaga uyu munsi", "Ufite fees zitarishyurwa").
-- **Direct Message ku ishuri**: kohereza ubutumwa kuri Director cyangwa mwarimu.
-- **Link Request**: niba afite umwana mushya, asaba kumufashanya na konti ye, Admin akemeza.
-- **Auto SMS Reminder**: cron ihora yorohereza ababyeyi, **iyo umwana ahomeje fees**, sisitemu ihita ibishyikiriza ababyeyi mbere y'uko bibaviramo ibibazo.
-
-➡️ **Umubyeyi ntiyongera kuza ku ishuri** kugira ngo amenye uko umwana ahagaze. Aba yari yiteguye igihe inama irimo gukorwa, kandi **abanyeshuri ntibahisha amakuru ku babyeyi babo**.
-
----
-
-## 4. Akamaro ku barimu (teachers / instructors)
-
-### Teacher Dashboard — `/teacher-dashboard`
-Mwarimu afite ubwo bushobozi:
-- **Attendance**: kwandika abari muri classe ku gihe (mu masegonda 30).
-- **Grades**: gushyira amanota ya quiz / exam / test, ahita abona **average** ya class.
-- **Course Notes Upload**: gushyira amasomo (PDF, slides, video) abana barangije bagasoma mu rugo.
-- **Q&A inbox**: kubona ibibazo abana banditse, akabasubiza.
-- **Trade roster**: kureba abanyeshuri be bose (na photos), n'**uko buri wese atera imbere**.
-- **Bulk SMS** ku banyeshuri be (urugero: "Igitabo cya mu maso kuzaba kuri 9h00").
-
-➡️ Igisubizo: mwarimu **akoresha igihe gito mu kazi gato**, ariko **ategura amasomo cyane** kuko abona uko buri mwana ahagaze.
+### Ibikoresho byo gukora (DevOps)
+- **MySQL local** ikoreshwa muri development (port 3306).
+- Workflow: `bash start-dev.sh` (frontend port 5000, backend port 8080).
 
 ---
 
-## 5. Akamaro ku biga gutwara (driving school learners)
+## 3. Imiterere y'umushinga
 
-Garden TVET ifite **Driving School** yihariye. Iyi sisitemu yongeyemo modules yihariye y'abiga gutwara:
-
-### Driving Rules Page — `/driving-rules`
-- **Test za practice** (multiple choice) ku miyoboro yo mu Rwanda.
-- **Tracking ya score**: buri muntu abona aho yatangiriye n'aho atera imbere.
-- **Lessons**: amasomo y'igitabo cy'amategeko, abasoma 24/7.
-- **Practical lesson scheduling**: kwemera **practical session** na instructor.
-
-### Driving School module — `/driving-school`
-- **Instructor login** (token ihariye).
-- **Stock ya carburant** (igenzurwe ku gihe).
-- **Course materials upload**.
-- **Tracking ya buri lesson** y'umunyeshuri (theory + practical).
-
-➡️ Iyi yatumye ishuri ricyiyungura **driving learners 50+ buri kwezi**, kuko ubu bashobora kwiga **mu rugo** (theory) bagasaba **practical** iyo bareba ko biteguye.
-
----
-
-## 6. Akamaro ku ma-Employers
-
-Sosiyete na compagnies bafata abakozi **bibitse muri sisitemu** mu **Employer Directory** (`/employers`):
-- Izina, contact, email, phone, sector
-- **Trades zikenewe** (urugero: "Twifuza Software Devs gusa")
-- **Outreach history**: amateka y'ibyo twohereje
-- **Status** (active / inactive / archived)
-
-### Send Roster button
-Director / Registrar ashobora gukanda **"Send to Employers"**:
-1. Sisitemu **ifata abasoje** ku byo washyizemo (mwaka, trade, search)
-2. **Ikora PDF nyayo** ifite urutonde rwuzuye (reg number, level, phone, location, itariki yarangirijeho)
-3. **Yohereza email** (HTML iboneye + PDF attached) ku ma-employers wahisemo
-4. **Yandika buri kohereza** muri `employer_outreach` (audit log) — niba byanze, ihinda error.
-
-➡️ Ibi bituma ishuri **rikora active recruitment** ku basoje, ntirikomeze kwitegereza ko basozi bashaka akazi bonyine.
-
----
-
-## Uburyo ifasha ishuri kwinjiza amafaranga
-
-### 💰 1. Kongera ubushobozi bwo kwakira abanyeshuri
-Mbere, ishuri ryashoboraga kwakira abana **100 ku mwaka** kubera ko **administration ya papier** yari ihagaze ku bantu bake.
-Ubu, ubwo dusoza umwaka mu **buryo bwa otomatike**, dushobora kwakira **abana 300+** nta kibazo. **Revenue x3**.
-
-### 💼 2. Yearbook + Employer Outreach
-- **Graduates page** + **PDF roster** + **Send to Employers**: tubona **placement rate** yiyongereye.
-- Iyo abana ba Garden bahita babona akazi, abandi bana **bahitamo ishuri ryacu**.
-- Bituma **tuition fees** ziganisha ubushobozi bwo kongera amasomo.
-
-### 📋 3. Raporo ya Government / RTB
-Sisitemu itanga raporo zikurikira mu **buryo butihishe**:
-- Umubare w'abanyeshuri buri trade
-- Imibare y'abasoje buri mwaka
-- Imibare y'abahawe diplome
-- Imibare y'**abagore vs abagabo** (gender breakdown)
-- Imibare y'abagiye gukora mu sosiyete (employer outreach metrics)
-
-➡️ Government ishishikajwe n'amakuru nk'aya — bituma **inkunga yiyongera**.
-
-### 🚗 4. Driving School Revenue
-- Online theory & practice itesha amafaranga ku booking practical
-- Ababishaka kwiga **bashobora kwiyandikisha mu rugo**
-- Sisitemu ihuza payment + scheduling — **conversion rate yiyongera**
-
-### 🎯 5. Auto-fees Reminders
-- Cron itanga SMS ku ababyeyi bafite **fees zitarishyurwa**
-- Mbere y'uko fees zihinduka **bad debt**, ababyeyi bose bamenya
-- **Recovery rate ya fees +30%**
-
-### 🛡️ 6. Ntahombo ku miyoborere
-- **Resource leakage = 0**, kubera ko **buri muntu agira role yihariye**.
-- **Audit log**: niba hari ikibazo, sisitemu ivuga uwagikoze n'igihe.
-
----
-
-## Cohort Engine — Algoritime yo guhindura imyaka
-
-### Inyigisho ya rusange
-Iyo Admin/Director **akanze "Funga Umwaka"**, sisitemu ikora ibi:
-1. **Ifata abanyeshuri bose** baturutse mu mwaka urangiye.
-2. **Igira plan** — buri munyeshuri akagira **action**: `promoted` / `retained` / `graduated`.
-3. **Director ashobora kuvuga "Reka, uyu nje arasubizwa"** (`override`).
-4. Iyo abyemeje, sisitemu **iyandika byose mu transaction imwe** (ACID).
-
-### SOD na BDC — **Linear Ladder**
 ```
-L3  ─────►  L4  ─────►  L5  ─────►  GRADUATED  (history forever)
+.
+├── backend/
+│   ├── controllers/        # Logic ya buri module (students, fees, …)
+│   ├── routes/             # Express endpoints
+│   ├── middleware/         # JWT, role checks
+│   ├── utils/              # SMS, email, cron, helpers
+│   ├── public/uploads/     # File n'amafoto byashyizweho
+│   ├── garden_tvet.sql     # Schema ya database
+│   └── server.js           # Aho server itangirira
+├── frontend/
+│   ├── src/
+│   │   ├── pages/          # Amapaji yose (Dashboard, Students, …)
+│   │   │   └── teacher/    # Amapaji y'umwarimu (Notes, Conduct, …)
+│   │   ├── layouts/        # Layout, TeacherLayout, StudentLayout, PublicLayout
+│   │   ├── components/     # Components zikoreshwa kenshi
+│   │   ├── store/          # Zustand store (auth)
+│   │   ├── utils/          # API client, PDF cover
+│   │   └── i18n/           # Indimi (rw, en, fr)
+│   └── vite.config.js
+├── start-dev.sh            # Itangiza MySQL + backend + frontend
+└── README.md               # Iri dosiye
 ```
 
-### AUTO — **Mixed-Cohort Split**
-```
-                           ┌───────► L4a (rusange) ──┐
-L3 ─────► [SHUFFLE]────────┤                          ├───► [MIX & SPLIT]──┬──► L5a ──► GRADUATED
-                           └───────► L4b (rusange) ──┘                     └──► L5b ──► GRADUATED
-```
-
-**Intambwe:**
-1. **L3 → L4**: Abana ba L3 batondetswe ku **last_name → first_name → ID** (deterministic).
-2. **Sisitemu ibatandukanya** — alternating split: 1 → L4a, 2 → L4b, 3 → L4a... ibyo bituma cohorts zingana.
-3. **L4a + L4b → L5**: Sisitemu **ibahuza**, **ibatondeka bushya**, hanyuma **ibatandukanya nanone** muri **L5a + L5b**.
-4. **L5a + L5b → Graduated**: Bose bajya muri **history**, ariko buri wese **agumana cohort label** y'ahanyuze.
-
-### Audit Trail
-Iyo umwaka ufunzwe, sisitemu yandika muri `student_promotions`:
-| from_year | to_year | from_level | to_level | action | notes (cohort) |
-|---|---|---|---|---|---|
-| 2025 | 2026 | L3 | L4a | promoted | `Auto L3 → L4a` |
-| 2024 | 2025 | L4b | L5a | promoted | `Auto L4b → L5a` |
-| 2025 | — | L5b | — | graduated | `Auto L5b → Graduated` |
-
 ---
 
-## Yearbook y'Abasoje
+## 4. Inzira yo gutangira
 
-`/graduates` page itanga:
-- **Statistic Cards**: Total abasoje, imyaka, trades, diplomas.
-- **Filters**: Umwaka, Trade, ushobora gushakisha izina.
-- **Group cards**: Buri mwaka ufite umutwe ushobora gufungurwa/gufunga.
-- **Photo grid**: Buri munyeshuri afite **ifoto** cg **initials**.
-- **Modal y'umwirondoro**: reg number, telefone, aho atuye, umubyeyi, cohort yanyuzemo, n'itariki yarangirijeho.
-- **Print PDF**: Buto **"Cap PDF Roster"** itanga raporo y'urutonde rw'abasoje rwacapwe.
-- **Send to Employers**: kohereza roster ku ma-employer ku iyo filter (reba munsi).
+### Ibisabwa
+- **Node.js 20+**, **npm 10+**
+- **MySQL 8+** (cyangwa MariaDB 10+)
 
----
-
-## Employer Outreach (Send Roster ku ma-Employers)
-
-### Endpoints
-| Method | Path | Role |
-|---|---|---|
-| GET    | `/api/employers`              | read roles |
-| GET    | `/api/employers/:id`          | read roles (+ outreach history) |
-| POST   | `/api/employers`              | admin/director/registrar |
-| PUT    | `/api/employers/:id`          | admin/director/registrar |
-| DELETE | `/api/employers/:id`          | admin/director/registrar |
-| GET    | `/api/employers/email/status` | read roles |
-| POST   | `/api/employers/send-roster`  | admin/director/registrar |
-| GET    | `/api/employers/outreach`     | read roles (audit log) |
-
-### Algorithm `send-roster`
-1. Validates `employer_ids[]` and SMTP config.
-2. Loads active employers with valid emails.
-3. Queries graduates matching `year_id`, `trade`, `search` filters.
-4. Builds **a real PDF** (via `pdfkit`, server-side) once.
-5. Sends a beautifully-formatted HTML email with the PDF attached, **per employer**.
-6. Logs every send (success or failure) in `employer_outreach` and `email_log`.
-7. Returns a per-recipient result list to the UI.
-
-### Configure email (one-time setup)
-The send feature requires **SMTP credentials** from any provider (Gmail SMTP, SendGrid, Brevo, AWS SES, Mailgun, school's own email server…). Set the following environment variables:
-
-| Variable | Example |
-|---|---|
-| `SMTP_HOST`   | `smtp.gmail.com` |
-| `SMTP_PORT`   | `587` |
-| `SMTP_SECURE` | `false` (use `true` for port 465) |
-| `SMTP_USER`   | `school@gardentvet.rw` |
-| `SMTP_PASS`   | `••••••••••••` (Gmail app password) |
-| `SMTP_FROM`   | `Garden TVET School <noreply@gardentvet.rw>` |
-
-After setting, **restart the backend**. The Employers page will say "Email ready". If not configured, the send endpoint returns HTTP 503 with `EMAIL_NOT_CONFIGURED` — there is **no silent mock**.
-
----
-
-## Stack ya tekinike & Setup
-
-| Layer | Tekinoroji |
-|---|---|
-| Frontend | **React 19**, **Vite 7**, **Tailwind CSS**, **lucide-react**, **react-toastify**, **i18next** (Kinyarwanda + English + Français) |
-| Backend  | **Node.js**, **Express 5**, **mysql2/promise** (pool + transactions), **Nodemailer** (SMTP), **PDFKit** (server-side PDF generation), **Africa's Talking** (SMS), **node-cron** (auto reminders) |
-| Database | **MySQL 8** (booted from Nix store, local socket) |
-| Auth     | JWT + bcrypt + role-based access control (8 roles) |
-| Realtime | SSE bus for notifications |
-| Files    | `uploads/` (images, course notes, hero slides, photos) |
-
-### Ports
-- **Frontend (Vite)**: `5000`
-- **Backend (Express)**: `8080`
-- **MySQL**: socket `/home/runner/workspace/.data/mysql-run/mysql.sock`
-
-### Tangira sisitemu
+### Gushyira ahantu
 ```bash
+# 1. Shyiraho dependencies
+cd backend  && npm install
+cd ../frontend && npm install
+
+# 2. Shyiraho database
+mysql -u root -p
+CREATE DATABASE garden_tvet;
+exit
+mysql -u root -p garden_tvet < backend/garden_tvet.sql
+
+# 3. Shyiraho .env
+cp backend/.env.example backend/.env
+# nyuma andika DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, JWT_SECRET, ...
+
+# 4. Tangira sisitemu
 bash start-dev.sh
 ```
-Ibi bitangira **MySQL**, **backend** (port 8080), na **frontend** (port 5000).
 
-### Injira nka admin
-```
-Username: admin
-Password: (yashizweho mu nshuro ya mbere)
-```
+Sisitemu yumvikana ku **http://localhost:5000** (frontend) na
+**http://localhost:8080** (backend API).
 
----
-
-## 🛡️ Umutekano (Security)
-- **Buri request** isabwa **JWT token**.
-- **Role-based authorization** ku buri endpoint.
-- **Bcrypt** ku ma password.
-- **Helmet + CORS** zafunguwe ku byagenwe.
-- **SQL Injection-proof**: parameterized queries gusa.
-- **Transaction-safe**: gufunga umwaka bibera mu **ACID transaction**.
-- **Audit logs**: `student_promotions`, `employer_outreach`, `email_log`, attendance, discipline.
-- **Email compose audit**: buri email yoherejwe iri muri `email_log` n'icyiciro cyayo.
+### Konti zo kugerageza
+- **Admin**: `admin` / `admin123`
+- **Umunyeshuri**: kode (urugero `2026/SOF/001`) + nyuma 4 z'imibare ya telefoni
+  yanditse igihe yandikwaga.
 
 ---
 
-## ✍️ Uwabikoze
-**Garden TVET School ICT Team** — East / Ngoma 🇷🇼
+## 5. Inzego z'abakoresha (User roles)
 
-> Iyi sisitemu **ntabwo ari demo**. Ni **production-grade**: koresha, izaguhesha umusaruro mwiza ku ishuri.
+| Urwego | Akamaro |
+|---|---|
+| **admin** | Umuyobozi mukuru — afite ububasha bwose. |
+| **dod** | Director of Discipline — agenzura imyitwarire. |
+| **accountant** | Umubikabaranga — yakira amafaranga, atanga inyemezabwishyu. |
+| **stock_manager** | Ushinzwe ububiko — agenzura ibikoresho. |
+| **teacher** | Mwarimu — yoherereza inyandiko, asubiza ibibazo, yandika imyitwarire. |
+| **student** | Umunyeshuri — areba amanota, amafaranga, n'imyitwarire bye. |
+| **parent** | Umubyeyi — areba ibyabana be. |
+| **director** | Umuyobozi w'ishuri (umwihariko). |
+| **registrar** | Ushinzwe kwandikisha. |
+
+---
+
+## 6. Modules zose n'akamaro kazo
+
+### 6.1 Urubuga rusange (Public site)
+
+URL ya nyamukuru: **`/home`**
+
+| Page | Akamaro |
+|---|---|
+| `/home` | Itangiriro — amakuru y'ishuri, amasomo atangwa, n'inkuru za vuba. |
+| `/about` | Amateka, intego, imitwe y'abayobozi. |
+| `/services` | Serivisi z'ishuri (TVET + driving school). |
+| `/news` | Inkuru zose zatangajwe — buri nkuru irwa hari `/news/:id`. |
+| `/contact` | Imyirondoro y'ishuri (telefoni, email, ahantu). |
+| `/apply` | Gusaba kuza muri kaminuza — uzuza form, ushyiraho impamyabumenyi. |
+| `/parent-apply` | Umubyeyi yiyandikisha (kugira ngo abone konti). |
+| `/register` | Kwiyandikisha k'umubyeyi (parent registration). |
+| `/trade/:tradeName` | Umwuga umwe — amakuru, inzego, n'amasaha. |
+| `/driving-rules` | Amategeko y'umuhanda — abasoma bakora ibizamini. |
+| `/driving-school` | Iyandikisha ku ishuri ry'amategeko y'umuhanda. |
+| `/driving-instructor` | Konti y'umwigisha w'amategeko y'umuhanda. |
+| `/kwiga` | Inyandiko z'amasomo zose (ku myuga yose). |
+| `/kwiga/:tradeCode` | Inyandiko z'umwuga umwe. |
+| `/kwiga/:tradeCode/:level` | Inyandiko z'urwego rumwe — soma online, hire likes, … |
+
+**Akamaro:** Urubuga rusange ni urwomatse umuryango — ufasha gukwirakwiza
+amakuru, kwakira ababisaba, no gusangira amasomo n'abagana ishuri.
+
+---
+
+### 6.2 Konti y'umuyobozi (Admin)
+
+URL: **`/dashboard`**
+
+Layout: `Layout.jsx` (sidebar y'ibara rya primary).
+
+**Sidebar irimo:**
+- **Dashboard** — incamake (umubare w'abanyeshuri, abasaba, amafaranga, …).
+- **Notifications** — ubutumwa bwose (`/notifications`).
+- **Applications** — abasabye kuza muri kaminuza, kwemera/guhakana.
+- **Academic Year** — kugena umwaka w'amasomo ukoreshwa (current academic year).
+- **Graduates** — abasoje, kohereza CV ku employers.
+- **Employers** — abakoresha bashobora gusaba abasoje.
+- **Students** — kwandika, guhindura, gusiba, kohereza ku rwego rwo hejuru.
+- **Link Manager** — guhuza ababyeyi n'abana babo.
+- **Discipline** — ibyandikitse ku myitwarire mibi/myiza.
+- **Finance** — amafaranga y'ishuri, ku trimester, kuri buri trade/level.
+- **Stock** — ibikoresho biri mu bubiko.
+- **Parents** — urutonde rw'ababyeyi n'ibyabana babo.
+- **Staff** — abakora ku ishuri (admin/dod/accountant/teacher/…).
+- **CMS** — guhindura urubuga rusange (banner, news, services, …).
+- **Settings** — ibyifuzo bya konti.
+
+**Akamaro:** Admin ni nshingwabikorwa byose — yiga amakuru kuva ku
+banyeshuri kugeza ku mafaranga, akagena uburenganzira bwa buri rwego.
+
+---
+
+### 6.3 Konti y'umuyobozi w'imyitwarire (DOD)
+
+URL: **`/discipline`**
+
+DOD afite ububasha bumwe na admin ku byerekeye **imyitwarire**, **abanyeshuri**,
+**applications** n'**ababyeyi** — ariko ntabwo agera ku mafaranga cyangwa kuri
+stock.
+
+**Ibyo akora:**
+- Kwandika ibyabaye by'imyitwarire (warning, conduct removal, suspension,
+  praise, leave, sick, …).
+- Gukura amanota y'imyitwarire (conduct points) — buri munyeshuri atangirira
+  ku 100, akagikurikiranwa.
+- Kohereza SMS ku babyeyi (kabone notification).
+- Kugenzura imisanzu y'amasaha y'akazi (leave requests).
+- Gufata ibyemezo ku byifuzo by'ababyeyi (appeals).
+- Gushyiraho **conduct sheets** — itara ry'imyitwarire ya buri mwarimu.
+- Kuba `Director of Discipline` afite **broadcast SMS** kuri parents bose.
+
+---
+
+### 6.4 Konti y'umubikabaranga (Accountant)
+
+URL: **`/finance`**
+
+**Ibyo akora:**
+- Kwemeza amafaranga y'ishuri (fees) ku trade na level (Term 1 2026, …).
+- Kwakira amafaranga y'umunyeshuri — kohereza mu MTN MoMo, BK, cash, …
+- Gutanga **inyemezabwishyu** (receipts) — auto-generated number.
+- Kohereza SMS ku mubyeyi nyuma yo kwakira.
+- Kureba abafite ideni — `/parents` na `/students` na filter.
+- Driving school: kwakira amafaranga y'amasomo y'umuhanda.
+- Kohereza ubutumwa rusange ku babyeyi (broadcast SMS).
+
+---
+
+### 6.5 Konti y'ushinzwe ububiko (Stock Manager)
+
+URL: **`/stock`**
+
+**Ibyo akora:**
+- Kwandika ibikoresho byinjijwe (kalimo, makina, ibishyimbo, …).
+- Kwandika ibyasohotse — nde wabyakiriye, ku munsi ki.
+- Gukurikirana umubare w'ibisigaye (low-stock alerts).
+- Gusohora raporo (export PDF / Excel).
+
+---
+
+### 6.6 Konti y'umwarimu (Teacher)
+
+URL: **`/teacher`** (Layout: `TeacherLayout.jsx` — sidebar nk'iz'izindi nzego)
+
+**Sidebar irimo:**
+- **Akanya k'Ibanze** (`/teacher`) — incamake n'imibare ikomeye.
+- **Inyandiko** (`/teacher/notes`) — gushyiraho PDF, kubika cover, gusiba.
+- **Ibibazo by'Abanyeshuri** (`/teacher/questions`) — gusubiza ibibazo
+  byatanzwe ku rubuga rwa **Kwiga**.
+- **Abanyeshuri** (`/teacher/students`) — urutonde rw'abanyeshuri **(read-only,
+  ntabwo ashobora kongeraho cyangwa guhindura)**, hari filter ya trade/level.
+- **Imyitwarire** (`/teacher/conduct`) — kwandika imyitwarire mibi/myiza
+  (warning, conduct_removal, praise, suspension, …); ibi byandikwa muri
+  table ya `discipline_records`.
+- **Reactions & Comments** (`/teacher/engagement`) — reba **likes**, **comments**,
+  **bookmarks**, na **raised hands** (ibibazo) bya buri note.
+- **Settings** — ibyifuzo bya konti.
+
+**Akamaro:** Sidebar nshya iha umwarimu uburyo bworoshye bwo gukomeza
+ibikorwa bye nkuko abandi bayobozi babigenza, hamwe n'incamake ihagije y'uko
+abanyeshuri bitabira inyandiko ze.
+
+---
+
+### 6.7 Konti y'umunyeshuri (Student)
+
+URL: **`/student-dashboard`** (Layout: `StudentLayout.jsx` — ibara
+ry'icyatsi)
+
+**Inzira yo kwinjira:**
+1. Andika **kode** yawe (urugero: `2026/SOF/001`).
+2. Andika **ijambobanga** — bwa mbere ni nyuma 4 z'imibare ya telefoni
+   yanditse igihe wandikishijwe (urugero: niba telefoni ari `0788125735`,
+   ijambobanga ni `5735`).
+3. Genda kuri **Hindura ijambobanga** uhindure ryawe bwite.
+
+**Sidebar irimo:**
+- **Akanya k'Ibanze** — amakuru yawe (izina, kode, trade, level), conduct,
+  GPA, attendance rate, ideni.
+- **Amanota** — amanota yose (`student_grades`) + exam results.
+- **Amafaranga** — fees za trimester, ibyatanzwe, ibisigaye, n'inyemezabwishyu.
+- **Kwitabira** — kwitabira kwawe (iminsi 90 ishize) — present/absent/late/excused.
+- **Imyitwarire** — inkuru z'imyitwarire zandikiweho, conduct points zigeze.
+- **Ubutumwa** — notifications zerekeye konti yawe.
+- **Hindura ijambobanga** — kohindura ijambobanga ryawe.
+
+**Akamaro:** Buri munyeshuri ashobora kwireba — bituma ababyeyi n'abana
+bagira amakuru ahari igihe cyose.
+
+---
+
+### 6.8 Konti y'umubyeyi (Parent)
+
+URL: **`/parents`** (cyangwa `/parent-portal` igihe yiyandikisha)
+
+**Ibyo akora:**
+- Kureba abana be — buri wese amakuru y'amasomo, amafaranga, n'imyitwarire.
+- Kwakira ubutumwa bwa SMS/email ku byabaye ku mwana we.
+- Kohereza icyifuzo (appeal) iyo arwanya icyemezo cy'imyitwarire.
+- Kwemera/guhakana ibyifuzo by'akazi by'umwana we (leave requests).
+
+---
+
+### 6.9 Ishuri ry'amategeko y'umuhanda
+
+URL: **`/driving-rules`** na **`/driving-school`**
+
+**Ibikoresho:**
+- **Categories** zose z'amategeko y'umuhanda (A, B, C, D).
+- Buri **rule** ifite icyitegererezo, igisubizo nyacyo, n'ibisobanuro.
+- **Quizzes** — abakoresha bakora ibizamini bya online (multiple choice).
+- **Iyandikisha** — abasaba bashyiraho amafoto, kwishyura amafaranga,
+  no kwitegura ku bizamini.
+- **Driving Instructor Dashboard** (`/driving-instructor`) — umwigisha
+  agenzura abanyeshuri be n'amanota.
+
+---
+
+### 6.10 Kwiga — Inyandiko z'amasomo
+
+URL: **`/kwiga`** (rusange — ntabwo bisaba kwinjira)
+
+**Imyuga yashyizweho:**
+- **AUTO** — Automobile Technology
+- **BDC** — Building & Construction
+- **SOD** — Software Development
+- **DRV** — Driving rules
+
+**Imikorere:**
+- Buri PDF ifite **cover image** (auto-extracted ku rupapuro rwa 1).
+- **Reactions** — like, helpful, love, question (raised hand).
+- **Comments** — gutanga ibitekerezo, kuyabyikuza (likes), kuyabasubiza.
+- **Bookmarks** — kubika note ngo uyibone vuba.
+- **Reading progress** — kubika aho wagereye usoma.
+- **Q&A** — abanyeshuri bashobora gushyiraho ibibazo, abarimu bagasubiza.
+- **Statistics** — view count, download count, kuri buri note.
+
+---
+
+## 7. Endpoints zose za API
+
+### Authentication
+- `POST /api/auth/login` — login y'abakozi (admin/dod/accountant/…).
+- `POST /api/student-auth/login` — login y'umunyeshuri (kode + password).
+- `GET  /api/student-auth/me` — amakuru yose y'umunyeshuri winjiye.
+- `POST /api/student-auth/change-password` — guhindura ijambobanga.
+
+### Students & Discipline
+- `GET    /api/students` — urutonde rw'abanyeshuri (admin/dod/accountant).
+- `POST   /api/students` — kwandika umunyeshuri.
+- `PUT    /api/students/:id` — guhindura.
+- `DELETE /api/students/:id` — gusiba.
+- `GET    /api/discipline` — inkuru zose z'imyitwarire.
+- `POST   /api/discipline` — kwandika ikintu cy'imyitwarire.
+
+### Teacher (sidebar mode)
+- `GET  /api/teacher/students` — read-only list.
+- `POST /api/teacher/conduct` — kwandika imyitwarire.
+- `GET  /api/teacher/conduct` — inkuru z'imyitwarire mwarimu yashyize.
+- `GET  /api/teacher/engagement` — incamake ya likes/comments/hands ku notes ze.
+- `GET  /api/teacher/notes/comments` — comments zose ku notes ze.
+- `GET  /api/teacher/notes/bookmarks` — abakoze bookmark ku notes ze.
+
+### Notes & Learning
+- `GET  /api/course-notes` — notes zose za rusange.
+- `POST /api/course-notes` — gushyiraho note (mwarimu/admin).
+- `GET  /api/course-notes/:id/view` — gusoma PDF.
+- `GET  /api/course-notes/:id/cover` — cover image.
+- `POST /api/learning/notes/:id/comments` — gutanga comment.
+- `POST /api/learning/notes/:id/reactions` — like/helpful/love/question.
+- `POST /api/learning/notes/:id/bookmarks` — kubika.
+
+### Q&A
+- `POST /api/student-questions` — umunyeshuri ashyiraho ikibazo (rusange).
+- `GET  /api/student-questions` — abarimu/admin bareba.
+- `PATCH /api/student-questions/:id/answer` — gusubiza.
+- `GET  /api/student-questions/public` — Q&A zarasubijwe (rusange).
+
+### Finance
+- `GET  /api/fees` — fees zose.
+- `POST /api/fees` — kwemeza ifaranga.
+- `POST /api/payments` — kwakira amafaranga.
+- `GET  /api/payments/student/:id` — payments z'umunyeshuri.
+
+### Notifications
+- `GET  /api/notifications` (legacy) na `/api/notifications2` (nshya).
+- `POST /api/notifications2/read/:id` — kwemeza ko bwasomwe.
+
+### Driving School
+- `GET  /api/driving-rules` — amategeko yose.
+- `GET  /api/driving-rules/quiz` — gukora ikizamini.
+- `POST /api/driving-school/register` — iyandikisha.
+
+---
+
+## 8. Database — imbonerahamwe nyamukuru
+
+| Imbonerahamwe | Akamaro |
+|---|---|
+| `users` | Abakozi (admin, dod, accountant, teacher, parent). |
+| `students` | Abanyeshuri — kode, izina, trade, level, conduct, **password_hash** (nshya). |
+| `student_grades`, `exam_results` | Amanota n'ibizamini. |
+| `attendance` | Kwitabira buri munsi. |
+| `fees`, `fee_structures`, `payments` | Amafaranga y'ishuri. |
+| `discipline_records`, `leave_requests`, `appeals` | Imyitwarire. |
+| `course_notes`, `note_reactions`, `note_comments`, `note_bookmarks`, `note_reading_progress` | Inyandiko n'ibyo bikora. |
+| `student_questions`, `student_question_replies` | Q&A. |
+| `notifications`, `notifications2` | Ubutumwa bwa konti. |
+| `driving_rules`, `driving_categories`, `driving_payments` | Ishuri ry'amategeko. |
+| `applications`, `applicants` | Abasaba kuza muri kaminuza. |
+| `academic_years`, `student_promotions` | Umwaka w'amasomo n'iyimukira ku rwego rwo hejuru. |
+| `staff`, `parent_link_requests` | Abakozi n'ububiko bw'ababyeyi. |
+
+---
+
+## 9. Umutekano
+
+- **JWT** ikoreshwa kuri authentication; secret iri muri `JWT_SECRET`.
+- **bcrypt** ihisha amabanga (10 rounds) — hano harimo n'ay'abanyeshuri.
+- **role middleware** (`verifyRole`) ikingira buri endpoint.
+- **Multer** igenzura ubwoko bw'amafayilo — image, PDF, audio, video gusa,
+  hamwe n'igipimo cyemewe (25 MB).
+- Buri request ya backend ifite **CORS** ikomeye.
+- **Default password y'umunyeshuri** ni nyuma 4 z'imibare ya telefoni —
+  asabwa kuyihindura igihe yinjiye bwa mbere (`must_change_password`).
+- Ababyeyi bahabwa ubutumwa bwa SMS bushya buri uko hari icyabaye ku mwana.
+
+---
+
+## 10. Ibyumba bishyaho (Deployment)
+
+Sisitemu yashyizweho mu buryo bukurikira:
+
+- **Frontend** — yubatswe na Vite ikajyana muri `frontend/dist/`,
+  yashyirwaho na server iyo ari yo yose ya static (Nginx, Vercel, …).
+- **Backend** — Node 20+, ihuza na MySQL ya production. Variables
+  z'ingenzi: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`,
+  `JWT_SECRET`, `PORT`, hamwe na `SMS_API_KEY`/`SMTP_*` zose.
+- **Database** — MySQL 8+ (cyangwa MariaDB 10+). Schema iri muri
+  `backend/garden_tvet.sql`; sisitemu izi gushyiraho columns nshya
+  (`password_hash`, `must_change_password`, `last_login`,
+  `default_password_hint`) iyo zibura.
+- Mu **Replit**: kanda **Publish** ngo sisitemu igere kuri `.replit.app`.
+
+---
+
+## 📞 Imenyeshe
+
+- Garden TVET School — Kigali, Rwanda
+- Email: `info@gardentvet.rw`
+- Telefoni: `+250 788 000 000`
+- Urubuga: `https://gardentvet.rw`
+
+---
+
+> Iri dosiye igenewe **abakozi b'ishuri**, **abakora ku gisubizo**,
+> n'**abifuza kumva uko sisitemu ya Garden TVET ikora**. Uburyo bwo
+> kongerera modules zindi cyangwa guhindura imikorere bwasobanurwa muri
+> `.local/tasks/` — buri task ifite plan yayo.

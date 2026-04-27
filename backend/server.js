@@ -241,6 +241,8 @@ app.use('/api/course-notes', require('./routes/courseNotesRoutes'));
 app.use('/api/student-questions', require('./routes/studentQuestionsRoutes'));
 app.use('/api/learning', require('./routes/learningRoutes'));
 app.use('/api/realtime', require('./routes/realtimeRoutes'));
+app.use('/api/student-auth', require('./routes/studentAuthRoutes'));
+app.use('/api/teacher', require('./routes/teacherRoutes'));
 
 // General route
 app.get('/api/health', (req, res) => {

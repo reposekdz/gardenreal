@@ -29,27 +29,44 @@ const Login = () => {
         }
     }, [navigate]);
 
+    // Student registration codes look like 2026/SOF/001 or 2025/AUTO/12
+    const isStudentCode = (s) => /^\d{4}\s*\/\s*[A-Za-z]{2,5}\s*\/\s*\d{1,5}$/.test(String(s).trim());
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post(`${API_URL}/api/auth/login`, {
-                username,
-                password
-            });
+            // 1) Try student auth if username matches the reg-number pattern
+            if (isStudentCode(username)) {
+                try {
+                    const sres = await axios.post(`${API_URL}/api/student-auth/login`, {
+                        code: username.trim().toUpperCase().replace(/\s+/g, ''),
+                        password
+                    });
+                    const { accessToken, ...sdata } = sres.data;
+                    loginStore(sdata, accessToken);
+                    toast.success('Murakaza neza, ' + (sdata.first_name || ''));
+                    navigate('/student-dashboard');
+                    return;
+                } catch (sErr) {
+                    if (sErr.response?.status === 404 || sErr.response?.status === 401) {
+                        toast.error(sErr.response?.data?.message || 'Kode cyangwa ijambobanga si byo');
+                        return;
+                    }
+                    // fall through to staff login if other error
+                }
+            }
 
+            // 2) Staff login
+            const response = await axios.post(`${API_URL}/api/auth/login`, { username, password });
             const { accessToken, ...userData } = response.data;
             loginStore(userData, accessToken);
 
             toast.success('Login Successful! Welcome back.');
-            // Redirect based on role
-            if (userData.role === 'parent') {
-                navigate('/parents');
-            } else if (userData.role === 'teacher') {
-                navigate('/teacher');
-            } else {
-                navigate('/dashboard');
-            }
+            if (userData.role === 'parent') navigate('/parents');
+            else if (userData.role === 'teacher') navigate('/teacher');
+            else if (userData.role === 'student') navigate('/student-dashboard');
+            else navigate('/dashboard');
         } catch (error) {
             const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
             toast.error(message);
@@ -122,7 +139,7 @@ const Login = () => {
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Izina cyangwa Telephone
+                                Izina, Telephone, cyangwa Kode (2026/SOF/001)
                             </label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -130,11 +147,14 @@ const Login = () => {
                                     type="text"
                                     required
                                     className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-gray-800 placeholder-gray-400"
-                                    placeholder="Injira izina cyangwa telephone"
+                                    placeholder="Andika izina, telephone, cyangwa kode y'umunyeshuri"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
                             </div>
+                            <p className="text-xs text-gray-500 mt-1.5">
+                                Abanyeshuri: koresha kode yawe (urugero: <span className="font-mono font-bold">2026/SOF/001</span>) na ijambobanga rya nyuma 4 z'imibare ya telefoni yawe.
+                            </p>
                         </div>
 
                         <div>
