@@ -1,0 +1,8 @@
+2026-04-27T09:05:28.273684Z 0 [System] [MY-010116] [Server] /nix/store/s2lbn1axpc79kwnc829k5idkwabfq459-mysql-8.0.42/bin/mysqld (mysqld 8.0.42) starting as process 487
+2026-04-27T09:05:28.281677Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-04-27T09:05:28.595245Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-04-27T09:05:28.738589Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-04-27T09:05:28.738623Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-04-27T09:05:28.742266Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/home/runner' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-04-27T09:05:28.756410Z 0 [System] [MY-010931] [Server] /nix/store/s2lbn1axpc79kwnc829k5idkwabfq459-mysql-8.0.42/bin/mysqld: ready for connections. Version: '8.0.42'  socket: '/home/runner/workspace/.data/mysql-run/mysql.sock'  port: 3306  Source distribution.
+mbind: Operation not permitted
