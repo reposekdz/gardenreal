@@ -619,10 +619,108 @@ const initDatabase = async () => {
     }
 };
 
+// ────────────────────────────────────────────────────────────────────
+// Academic Year + Term migrations (idempotent)
+// ────────────────────────────────────────────────────────────────────
+const initAcademic = async () => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS academic_years (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(50) NOT NULL UNIQUE,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                status ENUM('planning','active','closed') DEFAULT 'active',
+                is_current TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                closed_at TIMESTAMP NULL,
+                closed_by INT NULL,
+                INDEX idx_is_current (is_current),
+                INDEX idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS academic_terms (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                academic_year_id INT NOT NULL,
+                term_number TINYINT NOT NULL,
+                name VARCHAR(50) NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                status ENUM('upcoming','active','ended') DEFAULT 'upcoming',
+                ended_at TIMESTAMP NULL,
+                ended_by INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uniq_year_term (academic_year_id, term_number),
+                CONSTRAINT fk_term_year FOREIGN KEY (academic_year_id)
+                    REFERENCES academic_years(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS student_promotions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                student_id INT NOT NULL,
+                from_academic_year_id INT NULL,
+                to_academic_year_id INT NULL,
+                from_trade VARCHAR(100) NULL,
+                to_trade VARCHAR(100) NULL,
+                from_level VARCHAR(50) NULL,
+                to_level VARCHAR(50) NULL,
+                action ENUM('enrolled','promoted','retained','graduated','transferred') NOT NULL,
+                notes TEXT NULL,
+                created_by INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_student (student_id),
+                INDEX idx_from_year (from_academic_year_id),
+                INDEX idx_to_year (to_academic_year_id),
+                INDEX idx_action (action)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+
+        // students extensions
+        const tryAlter = async (sql) => {
+            try { await connection.query(sql); } catch (_) { /* exists */ }
+        };
+        await tryAlter(`ALTER TABLE students ADD COLUMN academic_year_id INT NULL`);
+        await tryAlter(`ALTER TABLE students ADD COLUMN graduation_status ENUM('in_progress','graduated') DEFAULT 'in_progress'`);
+        await tryAlter(`ALTER TABLE students ADD COLUMN application_id INT NULL`);
+        await tryAlter(`ALTER TABLE students MODIFY COLUMN current_status ENUM('active','sick','left','suspended','on_leave','expelled','graduated') DEFAULT 'active'`);
+        await tryAlter(`ALTER TABLE students ADD INDEX idx_academic_year (academic_year_id)`);
+
+        // applications extensions
+        await tryAlter(`ALTER TABLE applications ADD COLUMN enrolled_student_id INT NULL`);
+        await tryAlter(`ALTER TABLE applications ADD COLUMN enrolled_at TIMESTAMP NULL`);
+        await tryAlter(`ALTER TABLE applications ADD COLUMN enrolled_trade VARCHAR(100) NULL`);
+        await tryAlter(`ALTER TABLE applications ADD COLUMN enrolled_level VARCHAR(50) NULL`);
+        await tryAlter(`ALTER TABLE applications ADD COLUMN enrolled_academic_year_id INT NULL`);
+        await tryAlter(`ALTER TABLE applications ADD COLUMN waitlisted TINYINT(1) DEFAULT 0`);
+        // Allow a 4th status value used by the controller
+        try {
+            await connection.query(`
+                ALTER TABLE applications
+                MODIFY COLUMN status ENUM('pending','approved','rejected','waitlisted') DEFAULT 'pending'
+            `);
+        } catch (_) {}
+
+        console.log('✅ Academic-year / promotion tables ready');
+        connection.release();
+    } catch (err) {
+        console.error('Academic-year migration error:', err.message);
+        if (connection) connection.release();
+    }
+};
+
 // Initialize database on module load - handle connection errors gracefully
-initDatabase().catch(err => {
-    console.log('Database will initialize on first API request');
-});
+initDatabase()
+    .then(() => initAcademic())
+    .catch(err => {
+        console.log('Database will initialize on first API request');
+    });
 
 // Export pool directly so controllers can use db.query()
 // Also export getDb as a named export for backward compatibility

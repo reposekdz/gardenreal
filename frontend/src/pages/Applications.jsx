@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
     FileText, CheckCircle, XCircle, Clock, Search, Filter,
     User, Mail, Phone, MapPin, GraduationCap, Calendar, ChevronDown,
-    Check, X, Loader2, Send, Eye, Download, Plus
+    Check, X, Loader2, Send, Eye, Download, Plus, UserPlus, Sparkles
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -37,13 +37,12 @@ const Applications = () => {
     const [reviewNotes, setReviewNotes] = useState('');
     const [processing, setProcessing] = useState(false);
 
-    // Add student form
-    const [showAddStudent, setShowAddStudent] = useState(false);
-    const [studentForm, setStudentForm] = useState({
-        first_name: '', last_name: '', gender: '', date_of_birth: '',
-        phone: '', email: '', province: '', district: '', sector: '',
-        trade: '', level: '', current_status: 'active'
-    });
+    // Enrollment modal (advanced)
+    const [enrollOpen, setEnrollOpen]     = useState(false);
+    const [enrollApp, setEnrollApp]       = useState(null);
+    const [enrollForm, setEnrollForm]     = useState({});
+    const [academicYears, setAcademicYears] = useState([]);
+    const [currentYear, setCurrentYear]   = useState(null);
 
     const fetchApplications = async () => {
         setLoading(true);
@@ -57,8 +56,20 @@ const Applications = () => {
         }
     };
 
+    const fetchYears = async () => {
+        try {
+            const [allRes, curRes] = await Promise.all([
+                axios.get(`${API_URL}/api/academic-years`, { headers }),
+                axios.get(`${API_URL}/api/academic-years/current`, { headers }),
+            ]);
+            setAcademicYears(allRes.data || []);
+            setCurrentYear(curRes.data || null);
+        } catch (_) { /* admin-only API; ignore for non-admins */ }
+    };
+
     useEffect(() => {
         fetchApplications();
+        fetchYears();
     }, []);
 
     const filteredApps = applications.filter(app => {
@@ -93,64 +104,64 @@ const Applications = () => {
         }
     };
 
-    const addStudentFromApplication = async (app) => {
+    const openEnrollModal = (app) => {
+        setEnrollApp(app);
+        setEnrollForm({
+            trade: app.trade || '',
+            level: app.level || '',
+            academic_year_id: currentYear?.id || '',
+            student_type: 'private',
+            reg_number: '',
+            first_name: app.first_name || '',
+            last_name:  app.last_name || '',
+            gender:     app.gender || 'Male',
+            date_of_birth: app.date_of_birth ? String(app.date_of_birth).slice(0, 10) : '',
+            contact_phone: app.phone || '',
+            contact_email: app.email || '',
+            guardian_name: '',
+            guardian_phone: app.parent_phone || '',
+            guardian_relation: '',
+            address_province: app.province || '',
+            address_district: app.district || '',
+            address_sector:   app.sector || '',
+            review_notes: 'Enrolled by admin from application',
+        });
+        setEnrollOpen(true);
+    };
+
+    const submitEnroll = async () => {
+        if (!enrollApp) return;
+        if (!enrollForm.trade || !enrollForm.level) {
+            return toast.error('Toranya trade na level.');
+        }
         setProcessing(true);
         try {
-            // Handle both full application and simplified parent application
-            const nameParts = app.student_name ? app.student_name.trim().split(' ') : [app.first_name || '', app.last_name || ''];
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts.slice(1).join(' ') || '';
+            const payload = { ...enrollForm };
+            if (!payload.academic_year_id) delete payload.academic_year_id;
+            if (!payload.reg_number)       delete payload.reg_number;
 
-            const studentData = {
-                first_name: app.first_name || firstName,
-                last_name: app.last_name || lastName,
-                gender: app.gender,
-                date_of_birth: app.date_of_birth,
-                phone: app.phone,
-                email: app.email,
-                province: app.province,
-                district: app.district,
-                sector: app.sector,
-                trade: app.trade,
-                level: app.level,
-                current_status: 'active',
-                enrollment_date: new Date().toISOString().split('T')[0]
-            };
-
-            const studentRes = await axios.post(`${API_URL}/api/students`, studentData, { headers });
-            const studentId = studentRes.data.studentId;
-
-            // If there's a parent linked to this application, link them
-            if (app.parent_phone) {
-                try {
-                    // Find parent by phone
-                    const parentRes = await axios.get(`${API_URL}/api/parents?phone=${app.parent_phone}`, { headers });
-                    if (parentRes.data && parentRes.data.length > 0) {
-                        const parentId = parentRes.data[0].id;
-                        await axios.post(`${API_URL}/api/parents/link`,
-                            { student_id: studentId, parent_id: parentId, relationship: 'parent' },
-                            { headers }
-                        );
-                    }
-                } catch (e) {
-                    console.log('Could not link parent:', e.message);
-                }
-            }
-
-            // Update application status
-            await axios.put(`${API_URL}/api/applications/${app.id}`,
-                { status: 'approved', review_notes: 'Student added to system' },
+            const res = await axios.post(
+                `${API_URL}/api/applications/${enrollApp.id}/enroll`,
+                payload,
                 { headers }
             );
-
-            toast.success('Umwana yashyizwe mu mucyo! SMS yoherejwe.');
+            toast.success(`Umunyeshuri yandikishijwe — Reg ${res.data.reg_number}.`);
+            setEnrollOpen(false);
+            setEnrollApp(null);
             fetchApplications();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Habaye ikibazo');
+            toast.error(err.response?.data?.message || 'Habaye ikibazo.');
         } finally {
             setProcessing(false);
         }
     };
+
+    const updateEnrollField = (key, value) =>
+        setEnrollForm(prev => ({ ...prev, [key]: value }));
+
+    const tradeLevels = enrollForm.trade && LEVELS[enrollForm.trade]
+        ? LEVELS[enrollForm.trade]
+        : ['Level 3', 'Level 4', 'Level 5'];
 
     const getStatusBadge = (status) => {
         const styles = {
@@ -296,13 +307,20 @@ const Applications = () => {
                                                     </button>
                                                 </>
                                             )}
-                                            {app.status === 'approved' && (
+                                            {app.status === 'approved' && !app.enrolled_student_id && (
                                                 <button
-                                                    onClick={() => addStudentFromApplication(app)}
+                                                    onClick={() => openEnrollModal(app)}
                                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium flex items-center gap-2"
                                                 >
-                                                    <Plus size={18} /> Fata Umwana
+                                                    <UserPlus size={18} /> Andika nk'umunyeshuri
                                                 </button>
+                                            )}
+                                            {app.enrolled_student_id && (
+                                                <span className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1">
+                                                    <CheckCircle size={14} /> Yanditse
+                                                    {app.enrolled_trade && ` · ${app.enrolled_trade}`}
+                                                    {app.enrolled_level && ` · ${app.enrolled_level}`}
+                                                </span>
                                             )}
                                         </div>
                                     </div>
@@ -377,8 +395,184 @@ const Applications = () => {
                     </div>
                 </div>
             )}
+
+            {/* Enroll Modal */}
+            {enrollOpen && enrollApp && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-t-3xl flex items-center justify-between sticky top-0 z-10">
+                            <div>
+                                <h3 className="font-black text-lg flex items-center gap-2">
+                                    <Sparkles size={20} /> Enroll Applicant
+                                </h3>
+                                <p className="text-xs text-primary-100">
+                                    {enrollApp.first_name} {enrollApp.last_name} — yasabye {enrollApp.trade} ({enrollApp.level})
+                                </p>
+                            </div>
+                            <button onClick={() => setEnrollOpen(false)} className="p-2 hover:bg-white/10 rounded-xl"><X size={18} /></button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            {/* Academic context */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <Field label="Academic Year">
+                                    <select className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.academic_year_id || ''}
+                                        onChange={e => updateEnrollField('academic_year_id', e.target.value)}>
+                                        <option value="">— current —</option>
+                                        {academicYears.map(y => (
+                                            <option key={y.id} value={y.id}>
+                                                {y.name} {y.is_current ? '★' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </Field>
+                                <Field label="Trade">
+                                    <select className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.trade}
+                                        onChange={e => updateEnrollField('trade', e.target.value)}>
+                                        <option value="">— hitamo —</option>
+                                        {TRADES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </Field>
+                                <Field label="Level">
+                                    <select className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.level}
+                                        onChange={e => updateEnrollField('level', e.target.value)}>
+                                        <option value="">— hitamo —</option>
+                                        {tradeLevels.map(l => <option key={l} value={l}>{l}</option>)}
+                                    </select>
+                                </Field>
+                            </div>
+
+                            {(enrollForm.trade !== enrollApp.trade || enrollForm.level !== enrollApp.level) && (
+                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
+                                    Uri guhindura uko yasabye: <strong>{enrollApp.trade} / {enrollApp.level}</strong> →{' '}
+                                    <strong>{enrollForm.trade} / {enrollForm.level}</strong>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <Field label="Reg No (option)">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        placeholder="Auto-generate niba ureka ubusa"
+                                        value={enrollForm.reg_number || ''}
+                                        onChange={e => updateEnrollField('reg_number', e.target.value)} />
+                                </Field>
+                                <Field label="Student Type">
+                                    <select className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.student_type}
+                                        onChange={e => updateEnrollField('student_type', e.target.value)}>
+                                        <option value="private">Private</option>
+                                        <option value="government">Government</option>
+                                        <option value="bursary">Bursary</option>
+                                    </select>
+                                </Field>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <Field label="First Name">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.first_name}
+                                        onChange={e => updateEnrollField('first_name', e.target.value)} />
+                                </Field>
+                                <Field label="Last Name">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.last_name}
+                                        onChange={e => updateEnrollField('last_name', e.target.value)} />
+                                </Field>
+                                <Field label="Gender">
+                                    <select className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.gender}
+                                        onChange={e => updateEnrollField('gender', e.target.value)}>
+                                        <option>Male</option>
+                                        <option>Female</option>
+                                    </select>
+                                </Field>
+                                <Field label="DOB">
+                                    <input type="date" className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.date_of_birth || ''}
+                                        onChange={e => updateEnrollField('date_of_birth', e.target.value)} />
+                                </Field>
+                                <Field label="Phone">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.contact_phone}
+                                        onChange={e => updateEnrollField('contact_phone', e.target.value)} />
+                                </Field>
+                                <Field label="Email">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.contact_email || ''}
+                                        onChange={e => updateEnrollField('contact_email', e.target.value)} />
+                                </Field>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <Field label="Province">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.address_province || ''}
+                                        onChange={e => updateEnrollField('address_province', e.target.value)} />
+                                </Field>
+                                <Field label="District">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.address_district || ''}
+                                        onChange={e => updateEnrollField('address_district', e.target.value)} />
+                                </Field>
+                                <Field label="Sector">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.address_sector || ''}
+                                        onChange={e => updateEnrollField('address_sector', e.target.value)} />
+                                </Field>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <Field label="Guardian Name">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.guardian_name || ''}
+                                        onChange={e => updateEnrollField('guardian_name', e.target.value)} />
+                                </Field>
+                                <Field label="Guardian Phone">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        value={enrollForm.guardian_phone || ''}
+                                        onChange={e => updateEnrollField('guardian_phone', e.target.value)} />
+                                </Field>
+                                <Field label="Relation">
+                                    <input className="w-full px-3 py-2 rounded-xl border"
+                                        placeholder="Father / Mother / Guardian"
+                                        value={enrollForm.guardian_relation || ''}
+                                        onChange={e => updateEnrollField('guardian_relation', e.target.value)} />
+                                </Field>
+                            </div>
+
+                            <Field label="Notes (SMS)">
+                                <textarea className="w-full px-3 py-2 rounded-xl border" rows="2"
+                                    value={enrollForm.review_notes || ''}
+                                    onChange={e => updateEnrollField('review_notes', e.target.value)} />
+                            </Field>
+
+                            <div className="flex gap-3 pt-2">
+                                <button onClick={() => setEnrollOpen(false)}
+                                    className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold">
+                                    Reka
+                                </button>
+                                <button onClick={submitEnroll} disabled={processing}
+                                    className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2">
+                                    {processing ? <Loader2 size={18} className="animate-spin" /> : <UserPlus size={18} />}
+                                    Andika
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+
+const Field = ({ label, children }) => (
+    <label className="block">
+        <span className="block text-xs font-bold uppercase text-gray-600 mb-1">{label}</span>
+        {children}
+    </label>
+);
 
 export default Applications;

@@ -22,3 +22,33 @@ Full-stack web application for Garden TVET School.
 ## Deployment
 - Configured for `vm` deployment running `bash start-dev.sh`.
 - For production, a hosted MySQL via `DATABASE_URL` is recommended (the backend already supports it with SSL).
+
+## Academic Year & Promotion System (April 2026)
+A real (no mocks) academic year management module is wired end-to-end.
+
+### Database (idempotent migrations in `backend/db.js`)
+- `academic_years(id, name, start/end_date, status[planning|active|closed], is_current, closed_at, closed_by)`
+- `academic_terms(id, academic_year_id, term_number, name, start/end_date, status[upcoming|active|ended])`
+- `student_promotions(id, student_id, academic_year_id, from_trade, from_level, to_level, action[promoted|graduated|retained|enrolled], notes, created_by, created_at)`
+- `students` extended with `academic_year_id`, `graduation_status`, `application_id`; `current_status` enum extended with `graduated|on_leave|expelled`.
+- `applications` extended with `enrolled_student_id`, `enrolled_at`, `enrolled_trade`, `enrolled_level`, `enrolled_academic_year_id`.
+
+### Backend (`/api/academic-years`, admin/director only for writes)
+- `GET /` list, `POST /` create year + 3 terms (transactional)
+- `GET /current`, `POST /:id/set-current`, `GET /:id`
+- `POST /:id/terms/:termId/end` ends a term
+- `GET /:id/preview-close` returns promotion plan + intake count
+- `POST /:id/close` closes the year, transactionally promotes / graduates per `LEVEL_LADDER`
+  (Software Dev/Building: L3→L4→L5→graduated; Automobile: L3→L4a→L4b→L5a→L5b→graduated),
+  optionally creates the next year and intakes any not-yet-enrolled approved applicants.
+- `GET /promotions?year_id=&limit=` history log.
+- `POST /api/applications/:id/enroll` admin enrollment with full overrides
+  (academic_year_id, trade, level, reg_number, student fields). Auto-generates `2026/SOF/001`-style
+  reg numbers when omitted, marks the application enrolled, logs a `student_promotions` row, sends SMS.
+
+### Frontend
+- New page `frontend/src/pages/AcademicYear.jsx` (route `/academic-year`, nav-gated to admin/director):
+  year tabs, terms timeline with end-term buttons, year-create wizard, close-year preview with
+  promote/graduate/retain summary and optional next-year creation form, recent promotion history.
+- `frontend/src/pages/Applications.jsx` updated with a powerful **Enroll** modal allowing admins
+  to override trade/level/academic year and edit student details before creating the student record.

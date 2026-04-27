@@ -197,6 +197,7 @@ const gradeRoutes = require('./routes/gradeRoutes');
 const smsTemplateRoutes = require('./routes/smsTemplateRoutes');
 const newsEngagementRoutes = require('./routes/newsEngagementRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const academicYearRoutes = require('./routes/academicYearRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -232,6 +233,7 @@ app.use('/api/grades', gradeRoutes);
 app.use('/api/sms-templates', smsTemplateRoutes);
 app.use('/api/news-engagement', newsEngagementRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/academic-years', academicYearRoutes);
 app.use('/api/driving-rules', require('./routes/drivingRulesRoutes'));
 app.use('/api/driving-school', require('./routes/drivingSchoolRoutes'));
 app.use('/api/course-notes', require('./routes/courseNotesRoutes'));

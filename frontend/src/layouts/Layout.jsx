@@ -100,6 +100,7 @@ const Layout = () => {
         { to: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard'), show: true },
         { to: '/notifications', icon: Bell, label: 'Notifications', show: true, badge: unreadCount },
         { to: '/applications', icon: FileText, label: t('nav.applications') || 'Applications', show: isAdmin || isDod || isAccountant },
+        { to: '/academic-year', icon: Calendar, label: t('nav.academicYear') || 'Academic Year', show: isAdmin || user.role === 'director' },
         { to: '/students', icon: Users, label: t('nav.students'), show: isAdmin || isDod || isAccountant },
         { to: '/link-manager', icon: Link2, label: 'Link Manager', show: isAdmin || isDod || isAccountant },
         { to: '/discipline', icon: ShieldAlert, label: t('nav.discipline'), show: isAdmin || isDod },

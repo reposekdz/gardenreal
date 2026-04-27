@@ -299,6 +299,225 @@ const exportApplications = async (req, res) => {
     }
 };
 
+/**
+ * Admin: enroll an applicant as a real student.
+ *
+ * Body:
+ *   {
+ *     trade?: string,            // override (defaults to applied trade)
+ *     level?: string,            // override (defaults to applied level)
+ *     academic_year_id?: number, // override (defaults to current year)
+ *     student_type?: 'public'|'private',
+ *     reg_number?: string,       // optional, auto-generated if omitted
+ *     // any other student-shaped overrides:
+ *     first_name?, last_name?, gender?, date_of_birth?,
+ *     contact_phone?, contact_email?,
+ *     guardian_name?, guardian_phone?, guardian_relation?,
+ *     address_province?, address_district?, address_sector?,
+ *     address_cell?, address_village?,
+ *     review_notes?: string
+ *   }
+ *
+ * Side-effects (transactional):
+ *   1. Creates the student row
+ *   2. Marks the application status='approved', enrolled_*, enrolled_student_id
+ *   3. Records a `student_promotions` row with action='enrolled'
+ *   4. Sends a confirmation SMS (best-effort)
+ */
+const enrollApplicant = async (req, res) => {
+    const { id } = req.params;
+    const overrides = req.body || {};
+
+    const conn = await db.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [apps] = await conn.query(
+            'SELECT * FROM applications WHERE id = ? FOR UPDATE',
+            [id]
+        );
+        if (!apps.length) {
+            await conn.rollback();
+            return res.status(404).json({ message: 'Application not found' });
+        }
+        const app = apps[0];
+
+        if (app.enrolled_student_id) {
+            await conn.rollback();
+            return res.status(409).json({
+                message: 'Application already enrolled',
+                student_id: app.enrolled_student_id,
+            });
+        }
+
+        // Resolve target trade / level / academic year
+        const trade = (overrides.trade || app.trade || '').trim();
+        const level = (overrides.level || app.level || '').trim();
+        if (!trade || !level) {
+            await conn.rollback();
+            return res.status(400).json({ message: 'Trade na level birakenewe.' });
+        }
+
+        let academicYearId = overrides.academic_year_id || null;
+        if (!academicYearId) {
+            const [cur] = await conn.query(
+                `SELECT id FROM academic_years WHERE is_current = 1 ORDER BY id DESC LIMIT 1`
+            );
+            academicYearId = cur.length ? cur[0].id : null;
+        }
+
+        const yearEnrolled = new Date().getFullYear();
+
+        // Auto-generate registration number if needed
+        let regNumber = (overrides.reg_number || '').trim();
+        if (!regNumber) {
+            const tradeCode = trade
+                .replace(/[^a-zA-Z]+/g, ' ')
+                .trim()
+                .split(/\s+/)
+                .map(w => w[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 3) || 'GEN';
+            const [[{ n }]] = await conn.query(
+                `SELECT COUNT(*) AS n FROM students WHERE trade = ? AND year_enrolled = ?`,
+                [trade, yearEnrolled]
+            );
+            regNumber = `${yearEnrolled}/${tradeCode}/${String((n || 0) + 1).padStart(3, '0')}`;
+            // resolve duplicate just in case
+            let bump = 1;
+            while (true) {
+                const [exists] = await conn.query(
+                    'SELECT id FROM students WHERE reg_number = ?',
+                    [regNumber]
+                );
+                if (!exists.length) break;
+                bump++;
+                regNumber = `${yearEnrolled}/${tradeCode}/${String((n || 0) + bump).padStart(3, '0')}`;
+                if (bump > 50) break;
+            }
+        } else {
+            const [exists] = await conn.query(
+                'SELECT id FROM students WHERE reg_number = ?',
+                [regNumber]
+            );
+            if (exists.length) {
+                await conn.rollback();
+                return res.status(409).json({ message: 'Reg number isanzweho.' });
+            }
+        }
+
+        const studentRow = {
+            reg_number:       regNumber,
+            first_name:       overrides.first_name       || app.first_name,
+            last_name:        overrides.last_name        || app.last_name,
+            trade,
+            level,
+            gender:           overrides.gender           || (app.gender || 'Male'),
+            date_of_birth:    overrides.date_of_birth    || app.date_of_birth || null,
+            contact_phone:    overrides.contact_phone    || app.phone        || null,
+            contact_email:    overrides.contact_email    || app.email        || null,
+            guardian_name:    overrides.guardian_name    || null,
+            guardian_phone:   overrides.guardian_phone   || null,
+            guardian_relation:overrides.guardian_relation|| null,
+            address_province: overrides.address_province || app.province     || null,
+            address_district: overrides.address_district || app.district     || null,
+            address_sector:   overrides.address_sector   || app.sector       || null,
+            address_cell:     overrides.address_cell     || null,
+            address_village:  overrides.address_village  || null,
+            student_type:     overrides.student_type     || 'private',
+            year_enrolled:    yearEnrolled,
+            academic_year_id: academicYearId,
+            application_id:   app.id,
+        };
+
+        const [insertRes] = await conn.query(
+            `INSERT INTO students
+                (reg_number, first_name, last_name, trade, level, gender, date_of_birth,
+                 contact_phone, contact_email,
+                 guardian_name, guardian_phone, guardian_relation,
+                 address_province, address_district, address_sector, address_cell, address_village,
+                 current_status, student_type, year_enrolled,
+                 academic_year_id, application_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?,
+                     ?, ?,
+                     ?, ?, ?,
+                     ?, ?, ?, ?, ?,
+                     'active', ?, ?,
+                     ?, ?)`,
+            [
+                studentRow.reg_number, studentRow.first_name, studentRow.last_name,
+                studentRow.trade, studentRow.level, studentRow.gender, studentRow.date_of_birth,
+                studentRow.contact_phone, studentRow.contact_email,
+                studentRow.guardian_name, studentRow.guardian_phone, studentRow.guardian_relation,
+                studentRow.address_province, studentRow.address_district, studentRow.address_sector,
+                studentRow.address_cell, studentRow.address_village,
+                studentRow.student_type, studentRow.year_enrolled,
+                studentRow.academic_year_id, studentRow.application_id,
+            ]
+        );
+        const studentId = insertRes.insertId;
+
+        // Update application
+        await conn.query(
+            `UPDATE applications
+                SET status = 'approved',
+                    review_notes = COALESCE(?, review_notes),
+                    reviewed_at = NOW(),
+                    enrolled_student_id = ?,
+                    enrolled_at = NOW(),
+                    enrolled_trade = ?,
+                    enrolled_level = ?,
+                    enrolled_academic_year_id = ?
+              WHERE id = ?`,
+            [
+                overrides.review_notes || null,
+                studentId,
+                trade,
+                level,
+                academicYearId,
+                id,
+            ]
+        );
+
+        // History
+        await conn.query(
+            `INSERT INTO student_promotions
+                (student_id, from_academic_year_id, to_academic_year_id,
+                 from_trade, to_trade, from_level, to_level,
+                 action, notes, created_by)
+             VALUES (?, NULL, ?, ?, ?, NULL, ?, 'enrolled', ?, ?)`,
+            [
+                studentId,
+                academicYearId,
+                trade, trade, level,
+                `Enrolled from application #${id}`,
+                req.user?.id || null,
+            ]
+        );
+
+        await conn.commit();
+
+        // SMS confirmation (best-effort, after commit)
+        const smsMessage = `Murakoze ${studentRow.first_name}! Wandikishijwe muri Garden TVET nka ${trade} (${level}). Reg: ${regNumber}.`;
+        sendSMS(studentRow.contact_phone || app.phone, smsMessage).catch(() => {});
+
+        res.status(201).json({
+            message: 'Umunyeshuri yandikishijwe.',
+            application_id: Number(id),
+            student_id: studentId,
+            reg_number: regNumber,
+            trade, level, academic_year_id: academicYearId,
+        });
+    } catch (err) {
+        await conn.rollback();
+        console.error('enrollApplicant', err);
+        res.status(500).json({ message: 'Habaye ikibazo gushyiraho umunyeshuri.' });
+    } finally {
+        conn.release();
+    }
+};
+
 module.exports = {
     submitApplication,
     getApplications,
@@ -306,5 +525,6 @@ module.exports = {
     updateApplicationStatus,
     getApplicationStats,
     bulkUpdateApplications,
-    exportApplications
+    exportApplications,
+    enrollApplicant,
 };
